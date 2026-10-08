@@ -123,6 +123,15 @@
     }
     .card:hover .open-btn { background: rgba(15,118,110,.16); }
 
+    /* ── Logo strip ── */
+    .logo-strip { max-width: 520px; margin: 40px auto 0; padding: 0 24px; text-align: center; }
+    .logo-strip-label { font-size: .72rem; font-weight: 700; color: #94a3b8; letter-spacing: .07em; text-transform: uppercase; margin-bottom: 22px; }
+    .logos { display: flex; align-items: center; justify-content: center; gap: 32px; flex-wrap: wrap; }
+    .logo-item { display: flex; flex-direction: column; align-items: center; gap: 7px; }
+    .logo-item img { width: 40px; height: 40px; object-fit: contain; filter: grayscale(15%); opacity: .8; transition: opacity .2s, filter .2s; }
+    .logo-item img:hover { opacity: 1; filter: grayscale(0%); }
+    .logo-item span { font-size: .68rem; font-weight: 600; color: #94a3b8; white-space: nowrap; }
+
     /* ── Footer ── */
     footer { text-align: center; padding: 56px 24px 0; font-size: .76rem; color: #cbd5e1; }
   </style>
@@ -155,6 +164,32 @@
         <span class="open-btn">Open deck →</span>
       </div>
     </a>
+  </div>
+
+  <div class="logo-strip">
+    <p class="logo-strip-label">Technologies in this deck</p>
+    <div class="logos">
+      <div class="logo-item">
+        <img src="https://logo.clearbit.com/sap.com" alt="SAP CDP" onerror="this.style.display='none'">
+        <span>SAP CDP</span>
+      </div>
+      <div class="logo-item">
+        <img src="https://logo.clearbit.com/salesforce.com" alt="Salesforce" onerror="this.style.display='none'">
+        <span>Salesforce</span>
+      </div>
+      <div class="logo-item">
+        <img src="https://logo.clearbit.com/marketo.com" alt="Marketo" onerror="this.style.display='none'">
+        <span>Marketo</span>
+      </div>
+      <div class="logo-item">
+        <img src="https://logo.clearbit.com/demandbase.com" alt="Demandbase" onerror="this.style.display='none'">
+        <span>Demandbase</span>
+      </div>
+      <div class="logo-item">
+        <img src="https://logo.clearbit.com/concur.com" alt="SAP Concur" onerror="this.style.display='none'">
+        <span>SAP Concur</span>
+      </div>
+    </div>
   </div>
 
   <footer>CDP Playbook — Concur Marketing · SAP</footer>
