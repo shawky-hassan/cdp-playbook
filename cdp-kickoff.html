@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CDP Kickoff Decisions — Concur</title>
+  <meta name="description" content="October CDP kickoff decisions, proof-of-concept path, and PI-planning gate for the Concur CDP pilot." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300..800&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <style type="text/tailwindcss">
+    @theme {
+      --color-bg: #f7fafc;
+      --color-text: #102033;
+      --color-text-secondary: #334155;
+      --color-accent-1: #0f766e;
+      --color-accent-2: #2563eb;
+      --color-accent-3: #f59e0b;
+      --font-display: 'DM Serif Display', serif;
+      --font-body: 'Manrope', sans-serif;
+    }
+  </style>
+  <style>
+    :root{--color-bg:#f7fafc;--color-text:#102033}
+    *,*::before,*::after{box-sizing:border-box}
+    html,body{background:var(--color-bg);margin:0}
+    body{font-family:'Manrope',sans-serif;color:var(--color-text);overflow:hidden;height:100vh;width:100vw}
+    .deck{width:100vw;height:100vh;position:relative}
+    .slide{position:absolute;top:0;left:0;width:100%;height:100%;background:var(--color-bg);display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;transform:scale(.97);transition:opacity .55s ease,transform .55s ease;pointer-events:none;overflow:hidden}
+    .slide.active{opacity:1;transform:scale(1);pointer-events:all}
+    .slide>.content{position:relative;z-index:2;width:100%;max-width:1180px;padding:clamp(1.2rem,3.5vw,2.8rem)}
+    .nav-controls{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:16px;z-index:100;background:rgba(255,255,255,.84);backdrop-filter:blur(10px);padding:10px 20px;border-radius:999px;border:1px solid rgba(15,23,42,.08);box-shadow:0 4px 24px rgba(15,23,42,.08)}
+    .nav-btn{width:40px;height:40px;border:none;background:#fff;color:#0f766e;border-radius:999px;font-size:1.2rem;cursor:pointer;transition:background .15s}
+    .nav-btn:hover{background:#eaf6f4}
+    .slide-dots{display:flex;gap:6px}
+    .dot{width:8px;height:8px;border-radius:50%;background:rgba(15,23,42,.15);cursor:pointer;transition:all .2s}
+    .dot.active{background:#0f766e;width:22px;border-radius:4px}
+    .slide-counter{font-size:.8rem;color:#64748b;min-width:42px;text-align:center;font-weight:600}
+    .hint{position:fixed;bottom:22px;right:28px;font-size:.72rem;color:#94a3b8;z-index:100}
+    .reveal{opacity:0;transform:translateY(20px)}
+    .gradient-mesh{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+    .blob{position:absolute;border-radius:50%;filter:blur(70px);animation:float 16s ease-in-out infinite}
+    @keyframes float{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(24px,-20px) scale(1.06)}}
+    .slide::before{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse at center,transparent 55%,rgba(15,23,42,.06) 100%)}
+    .card{background:rgba(255,255,255,.86);border:1px solid rgba(15,23,42,.08);border-radius:24px;box-shadow:0 10px 30px rgba(15,23,42,.06)}
+    .mini{font-size:.87rem;color:#64748b;line-height:1.5}
+    .pill{display:inline-block;padding:5px 11px;border-radius:999px;font-size:.76rem;font-weight:700;background:rgba(15,118,110,.1);color:#0f766e;letter-spacing:.02em}
+    .pill-blue{background:rgba(37,99,235,.1);color:#2563eb}
+    .pill-amber{background:rgba(245,158,11,.12);color:#b45309}
+    .pill-red{background:rgba(239,68,68,.1);color:#dc2626}
+    .tableish{display:grid;grid-template-columns:1.2fr 1.4fr 1.4fr 1.4fr;gap:10px}
+    .cell{padding:14px 16px;border-radius:16px;background:#fff;border:1px solid rgba(15,23,42,.08);font-size:.88rem}
+    .head{background:#eaf6f4;font-weight:800;font-size:.82rem;color:#0f766e;letter-spacing:.04em;text-transform:uppercase}
+    .timeline{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+    .timeline .item{padding:20px;border-radius:22px;background:#fff;border:1px solid rgba(15,23,42,.08);position:relative}
+    .timeline .item::before{content:'';position:absolute;top:-9px;left:22px;width:14px;height:14px;border-radius:50%;background:#0f766e;box-shadow:0 0 0 5px rgba(15,118,110,.14)}
+    .big{font-size:clamp(2rem,4vw,3.4rem);font-weight:800;line-height:1;color:#0f766e}
+    .subtle-list li{margin:0 0 10px 0}
+    .arch-svg{width:100%;height:auto;display:block}
+    .progress-bar{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,#0f766e,#2563eb);z-index:200;transition:width .4s ease}
+  </style>
+</head>
+<body>
+<div class="progress-bar" id="progress"></div>
+<div class="deck">
+
+  <!-- Slide 1: Title -->
+  <section class="slide active" data-slide="1">
+    <div class="gradient-mesh">
+      <div class="blob" style="width:380px;height:380px;top:-80px;right:-80px;background:#0f766e;opacity:.14"></div>
+      <div class="blob" style="width:280px;height:280px;bottom:-60px;left:-60px;background:#2563eb;opacity:.1"></div>
+      <div class="blob" style="width:220px;height:220px;top:45%;left:20%;background:#f59e0b;opacity:.08"></div>
+    </div>
+    <div class="content text-center">
+      <div class="text-[88px] mb-4 reveal">🚀</div>
+      <h1 class="font-display text-[clamp(2.6rem,6vw,5rem)] leading-none mb-5 reveal">CDP Kickoff — Concur</h1>
+      <p class="text-[clamp(1rem,2vw,1.3rem)] text-text-secondary max-w-[860px] mx-auto leading-relaxed reveal">October proof-of-concept plan, sandbox activation path, operating model decisions, and PI-planning gate — everything agreed in the kickoff call, in one visual deck.</p>
+      <div class="mt-7 flex items-center justify-center gap-3 reveal">
+        <span class="pill">10 slides</span>
+        <span class="pill-amber pill">October kickoff decisions</span>
+        <span class="pill pill-red">PI gate: 31 Oct</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 2: What CDP is -->
+  <section class="slide" data-slide="2">
+    <div class="gradient-mesh">
+      <div class="blob" style="width:280px;height:280px;top:-60px;right:-50px;background:#0f766e;opacity:.08"></div>
+      <div class="blob" style="width:220px;height:220px;bottom:-50px;left:-40px;background:#2563eb;opacity:.07"></div>
+    </div>
+    <div class="content">
+      <h2 class="font-display text-5xl mb-5 reveal">What CDP actually is</h2>
+      <div class="reveal mb-5">
+        <svg viewBox="0 0 900 160" class="arch-svg" style="max-height:160px" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#2563eb"/></marker>
+            <marker id="ah2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#0f766e"/></marker>
+          </defs>
+          <rect x="10" y="10" width="210" height="140" rx="18" fill="rgba(255,255,255,0.92)" stroke="rgba(15,23,42,0.1)" stroke-width="1.5"/>
+          <text x="115" y="38" text-anchor="middle" font-family="Manrope" font-weight="800" font-size="12" fill="#64748b" letter-spacing="0.07em">SOURCE SYSTEMS</text>
+          <rect x="26" y="48" width="178" height="22" rx="6" fill="#f1f5f9"/><text x="115" y="63" text-anchor="middle" font-family="Manrope" font-size="11.5" font-weight="600" fill="#334155">Salesforce CRM</text>
+          <rect x="26" y="76" width="178" height="22" rx="6" fill="#f1f5f9"/><text x="115" y="91" text-anchor="middle" font-family="Manrope" font-size="11.5" font-weight="600" fill="#334155">Marketo</text>
+          <rect x="26" y="104" width="86" height="22" rx="6" fill="#f1f5f9"/><text x="69" y="119" text-anchor="middle" font-family="Manrope" font-size="11.5" font-weight="600" fill="#334155">MDG</text>
+          <rect x="118" y="104" width="86" height="22" rx="6" fill="#f1f5f9"/><text x="161" y="119" text-anchor="middle" font-family="Manrope" font-size="11.5" font-weight="600" fill="#334155">Outreach</text>
+          <line x1="222" y1="80" x2="290" y2="80" stroke="#2563eb" stroke-width="2" marker-end="url(#ah)" stroke-dasharray="5,3"/>
+          <text x="256" y="72" text-anchor="middle" font-family="Manrope" font-size="9.5" fill="#94a3b8" font-weight="600">Ingest</text>
+          <rect x="292" y="6" width="316" height="148" rx="22" fill="#0f766e"/>
+          <rect x="300" y="14" width="300" height="132" rx="16" fill="rgba(255,255,255,0.07)"/>
+          <text x="450" y="44" text-anchor="middle" font-family="Manrope" font-weight="800" font-size="11" fill="rgba(255,255,255,0.7)" letter-spacing="0.1em">SAP CDP</text>
+          <rect x="314" y="54" width="272" height="26" rx="8" fill="rgba(255,255,255,0.15)"/><text x="450" y="71" text-anchor="middle" font-family="Manrope" font-size="12" font-weight="700" fill="#fff">🔗  Identity Resolution &amp; Unification</text>
+          <rect x="314" y="87" width="130" height="26" rx="8" fill="rgba(255,255,255,0.12)"/><text x="379" y="104" text-anchor="middle" font-family="Manrope" font-size="11.5" font-weight="600" fill="rgba(255,255,255,0.9)">Indicators / Segments</text>
+          <rect x="452" y="87" width="134" height="26" rx="8" fill="rgba(255,255,255,0.12)"/><text x="519" y="104" text-anchor="middle" font-family="Manrope" font-size="11.5" font-weight="600" fill="rgba(255,255,255,0.9)">Explorations / CX Flows</text>
+          <text x="450" y="132" text-anchor="middle" font-family="DM Serif Display,serif" font-size="13" font-style="italic" fill="rgba(255,255,255,0.55)">One unified customer profile</text>
+          <line x1="610" y1="80" x2="676" y2="80" stroke="#0f766e" stroke-width="2" marker-end="url(#ah2)" stroke-dasharray="5,3"/>
+          <text x="643" y="72" text-anchor="middle" font-family="Manrope" font-size="9.5" fill="#94a3b8" font-weight="600">Activate</text>
+          <rect x="678" y="10" width="210" height="140" rx="18" fill="rgba(255,255,255,0.92)" stroke="rgba(15,23,42,0.1)" stroke-width="1.5"/>
+          <text x="783" y="38" text-anchor="middle" font-family="Manrope" font-weight="800" font-size="12" fill="#64748b" letter-spacing="0.07em">ACTIVATION</text>
+          <rect x="694" y="48" width="178" height="22" rx="6" fill="#eaf6f4"/><text x="783" y="63" text-anchor="middle" font-family="Manrope" font-size="11.5" font-weight="600" fill="#0f766e">Marketo</text>
+          <rect x="694" y="76" width="178" height="22" rx="6" fill="#eaf6f4"/><text x="783" y="91" text-anchor="middle" font-family="Manrope" font-size="11.5" font-weight="600" fill="#0f766e">Salesforce</text>
+          <rect x="694" y="104" width="86" height="22" rx="6" fill="#eaf6f4"/><text x="737" y="119" text-anchor="middle" font-family="Manrope" font-size="11.5" font-weight="600" fill="#0f766e">Demandbase</text>
+          <rect x="786" y="104" width="86" height="22" rx="6" fill="#eaf6f4"/><text x="829" y="119" text-anchor="middle" font-family="Manrope" font-size="11" font-weight="600" fill="#0f766e">S3 / Other</text>
+        </svg>
+      </div>
+      <div class="grid grid-cols-2 gap-5">
+        <div class="card p-6 reveal">
+          <div class="pill mb-2">Simple view</div>
+          <p class="text-xl font-semibold leading-snug mt-2">CDP is the layer between your source systems and your activation tools.</p>
+          <ul class="mini subtle-list mt-4">
+            <li>Ingests from CRM, Marketo, Sales Cloud, Outreach, MDG.</li>
+            <li>Resolves duplicate identities into one unified customer profile.</li>
+            <li>Sends segments and triggers downstream.</li>
+          </ul>
+        </div>
+        <div class="card p-6 reveal">
+          <div class="pill mb-2">Why it matters to you</div>
+          <p class="text-xl font-semibold leading-snug mt-2">One trusted audience layer instead of working separately in each tool.</p>
+          <ul class="mini subtle-list mt-4">
+            <li>Marketo becomes the execution engine, not the system of truth.</li>
+            <li>Salesforce provides CRM facts and opportunity context.</li>
+            <li>Demandbase becomes an intelligence input layer.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 3: Core flow -->
+  <section class="slide" data-slide="3">
+    <div class="gradient-mesh">
+      <div class="blob" style="width:340px;height:340px;top:0;right:-90px;background:#2563eb;opacity:.08"></div>
+    </div>
+    <div class="content">
+      <h2 class="font-display text-5xl mb-3 reveal">The core CDP flow</h2>
+      <p class="text-base text-text-secondary mb-6 reveal">Collect → unify → segment → activate.</p>
+      <div class="reveal mb-6">
+        <svg viewBox="0 0 900 140" class="arch-svg" style="max-height:140px" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="fa" markerWidth="10" markerHeight="8" refX="8" refY="4" orient="auto"><path d="M0,0 L0,8 L10,4 z" fill="#2563eb"/></marker></defs>
+          <rect x="8" y="10" width="168" height="120" rx="18" fill="white" stroke="rgba(15,23,42,0.09)" stroke-width="1.5"/>
+          <rect x="20" y="18" width="72" height="22" rx="11" fill="rgba(15,118,110,0.1)"/><text x="56" y="33" text-anchor="middle" font-family="Manrope" font-size="10" font-weight="700" fill="#0f766e">1. INGEST</text>
+          <text x="92" y="62" text-anchor="middle" font-family="Manrope" font-size="13.5" font-weight="800" fill="#102033">Source</text><text x="92" y="79" text-anchor="middle" font-family="Manrope" font-size="13.5" font-weight="800" fill="#102033">Systems</text>
+          <text x="92" y="103" text-anchor="middle" font-family="Manrope" font-size="10.5" fill="#64748b">CRM, Marketo, MDG,</text><text x="92" y="118" text-anchor="middle" font-family="Manrope" font-size="10.5" fill="#64748b">Outreach, intent data</text>
+          <line x1="178" y1="70" x2="218" y2="70" stroke="#2563eb" stroke-width="2.5" marker-end="url(#fa)"/>
+          <rect x="220" y="10" width="168" height="120" rx="18" fill="white" stroke="rgba(15,23,42,0.09)" stroke-width="1.5"/>
+          <rect x="232" y="18" width="72" height="22" rx="11" fill="rgba(15,118,110,0.1)"/><text x="268" y="33" text-anchor="middle" font-family="Manrope" font-size="10" font-weight="700" fill="#0f766e">2. UNIFY</text>
+          <text x="304" y="62" text-anchor="middle" font-family="Manrope" font-size="13.5" font-weight="800" fill="#102033">Golden</text><text x="304" y="79" text-anchor="middle" font-family="Manrope" font-size="13.5" font-weight="800" fill="#102033">Record</text>
+          <text x="304" y="103" text-anchor="middle" font-family="Manrope" font-size="10.5" fill="#64748b">Identity matching merges</text><text x="304" y="118" text-anchor="middle" font-family="Manrope" font-size="10.5" fill="#64748b">duplicates into 1 profile</text>
+          <line x1="390" y1="70" x2="430" y2="70" stroke="#2563eb" stroke-width="2.5" marker-end="url(#fa)"/>
+          <rect x="432" y="10" width="168" height="120" rx="18" fill="white" stroke="rgba(15,23,42,0.09)" stroke-width="1.5"/>
+          <rect x="444" y="18" width="100" height="22" rx="11" fill="rgba(15,118,110,0.1)"/><text x="494" y="33" text-anchor="middle" font-family="Manrope" font-size="10" font-weight="700" fill="#0f766e">3. SEGMENT</text>
+          <text x="516" y="62" text-anchor="middle" font-family="Manrope" font-size="13.5" font-weight="800" fill="#102033">Indicators</text><text x="516" y="79" text-anchor="middle" font-family="Manrope" font-size="13.5" font-weight="800" fill="#102033">&amp; Segments</text>
+          <text x="516" y="103" text-anchor="middle" font-family="Manrope" font-size="10.5" fill="#64748b">KPIs, scoring,</text><text x="516" y="118" text-anchor="middle" font-family="Manrope" font-size="10.5" fill="#64748b">audience logic</text>
+          <line x1="602" y1="70" x2="642" y2="70" stroke="#2563eb" stroke-width="2.5" marker-end="url(#fa)"/>
+          <rect x="644" y="10" width="248" height="120" rx="18" fill="#0f766e"/>
+          <rect x="656" y="18" width="80" height="22" rx="11" fill="rgba(255,255,255,0.2)"/><text x="696" y="33" text-anchor="middle" font-family="Manrope" font-size="10" font-weight="700" fill="rgba(255,255,255,0.9)">4. ACTIVATE</text>
+          <text x="768" y="63" text-anchor="middle" font-family="Manrope" font-size="13.5" font-weight="800" fill="#fff">Audiences</text><text x="768" y="80" text-anchor="middle" font-family="Manrope" font-size="13.5" font-weight="800" fill="#fff">&amp; CX Flows</text>
+          <rect x="656" y="93" width="108" height="28" rx="8" fill="rgba(255,255,255,0.15)"/><text x="710" y="111" text-anchor="middle" font-family="Manrope" font-size="10.5" font-weight="600" fill="rgba(255,255,255,0.9)">Batch → Marketo/SFDC</text>
+          <rect x="772" y="93" width="108" height="28" rx="8" fill="rgba(255,255,255,0.15)"/><text x="826" y="111" text-anchor="middle" font-family="Manrope" font-size="10.5" font-weight="600" fill="rgba(255,255,255,0.9)">Real-time CX Flow</text>
+        </svg>
+      </div>
+      <div class="grid grid-cols-3 gap-5">
+        <div class="card p-5 reveal"><h4 class="font-bold mb-1 text-sm uppercase tracking-wide text-[#0f766e]">Exploration</h4><p class="mini">Drag-and-drop builder where you define audience logic.</p></div>
+        <div class="card p-5 reveal"><h4 class="font-bold mb-1 text-sm uppercase tracking-wide text-[#0f766e]">Audience</h4><p class="mini">Scheduled or on-demand batch output pushed to Marketo or S3.</p></div>
+        <div class="card p-5 reveal"><h4 class="font-bold mb-1 text-sm uppercase tracking-wide text-[#0f766e]">CX Flow</h4><p class="mini">Real-time automation triggered by profile updates or indicator changes.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 4: Stack -->
+  <section class="slide" data-slide="4">
+    <div class="gradient-mesh"><div class="blob" style="width:260px;height:260px;bottom:-50px;right:-30px;background:#f59e0b;opacity:.08"></div></div>
+    <div class="content">
+      <h2 class="font-display text-5xl mb-4 reveal">How it relates to your stack</h2>
+      <div class="tableish mt-6">
+        <div class="cell head reveal">System</div><div class="cell head reveal">What it gives CDP</div><div class="cell head reveal">What CDP gives back</div><div class="cell head reveal">Why it matters</div>
+        <div class="cell reveal"><strong class="text-[#0f766e]">Salesforce</strong></div><div class="cell reveal">Leads, contacts, accounts, opportunities, relationship and pipeline context.</div><div class="cell reveal">Segment-ready audiences and trigger-based actions for lifecycle and sales motion.</div><div class="cell reveal">CDP adds cleaner identity resolution and cross-system audience logic.</div>
+        <div class="cell reveal"><strong class="text-[#2563eb]">Marketo</strong></div><div class="cell reveal">Email eligibility, engagement history, program behavior, form responses.</div><div class="cell reveal">Batch audiences and real-time triggers pushed into Marketo lists.</div><div class="cell reveal">Marketo becomes the execution engine; CDP becomes the audience brain.</div>
+        <div class="cell reveal"><strong class="text-[#b45309]">Demandbase</strong></div><div class="cell reveal">Intent, fit, buying-stage, account intelligence, and ABX signals.</div><div class="cell reveal">Sharper segmentation inputs and harmonized buying-group logic.</div><div class="cell reveal">CDP operationalizes ABX signals into usable campaign audiences.</div>
+        <div class="cell reveal"><strong>Concur / TR</strong></div><div class="cell reveal">Business context, account priorities, campaign use-case definitions.</div><div class="cell reveal">Targeted Travel &amp; Expense audiences and activation patterns.</div><div class="cell reveal">Pilot path for off-SFDC marketing and North Star alignment.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 5: Key objects -->
+  <section class="slide" data-slide="5">
+    <div class="gradient-mesh"><div class="blob" style="width:300px;height:300px;top:-80px;left:-40px;background:#0f766e;opacity:.09"></div></div>
+    <div class="content">
+      <h2 class="font-display text-5xl mb-3 reveal">The objects that matter most</h2>
+      <p class="text-base text-text-secondary mb-5 reveal">Four concepts needed before building any exploration.</p>
+      <div class="reveal mb-5">
+        <svg viewBox="0 0 900 80" class="arch-svg" style="max-height:80px" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="oa" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#0f766e"/></marker></defs>
+          <rect x="5" y="5" width="185" height="70" rx="14" fill="white" stroke="rgba(15,118,110,0.2)" stroke-width="2"/>
+          <text x="97" y="32" text-anchor="middle" font-family="Manrope" font-size="12" font-weight="800" fill="#102033">Contextual Profiles</text>
+          <text x="97" y="51" text-anchor="middle" font-family="Manrope" font-size="10.5" fill="#64748b">Source-level records</text>
+          <text x="97" y="66" text-anchor="middle" font-family="Manrope" font-size="10.5" fill="#64748b">(SF contact, Mkto lead…)</text>
+          <line x1="192" y1="40" x2="230" y2="40" stroke="#0f766e" stroke-width="2" marker-end="url(#oa)"/>
+          <rect x="232" y="5" width="200" height="70" rx="14" fill="#0f766e"/>
+          <text x="332" y="32" text-anchor="middle" font-family="Manrope" font-size="12" font-weight="800" fill="#fff">Unified Customer Profile</text>
+          <text x="332" y="51" text-anchor="middle" font-family="Manrope" font-size="10.5" fill="rgba(255,255,255,0.8)">Golden record after</text>
+          <text x="332" y="66" text-anchor="middle" font-family="Manrope" font-size="10.5" fill="rgba(255,255,255,0.8)">identity resolution</text>
+          <line x1="434" y1="40" x2="472" y2="40" stroke="#0f766e" stroke-width="2" marker-end="url(#oa)"/>
+          <rect x="474" y="5" width="190" height="70" rx="14" fill="white" stroke="rgba(15,118,110,0.2)" stroke-width="2"/>
+          <text x="569" y="32" text-anchor="middle" font-family="Manrope" font-size="12" font-weight="800" fill="#102033">Indicators</text>
+          <text x="569" y="51" text-anchor="middle" font-family="Manrope" font-size="10.5" fill="#64748b">Activity, calculated,</text>
+          <text x="569" y="66" text-anchor="middle" font-family="Manrope" font-size="10.5" fill="#64748b">predictive KPIs</text>
+          <line x1="666" y1="40" x2="704" y2="40" stroke="#0f766e" stroke-width="2" marker-end="url(#oa)"/>
+          <rect x="706" y="5" width="188" height="70" rx="14" fill="white" stroke="rgba(15,118,110,0.2)" stroke-width="2"/>
+          <text x="800" y="32" text-anchor="middle" font-family="Manrope" font-size="12" font-weight="800" fill="#102033">Segments</text>
+          <text x="800" y="51" text-anchor="middle" font-family="Manrope" font-size="10.5" fill="#64748b">Gold / Silver / Platinum,</text>
+          <text x="800" y="66" text-anchor="middle" font-family="Manrope" font-size="10.5" fill="#64748b">Low / Mid / High interest</text>
+        </svg>
+      </div>
+      <div class="grid grid-cols-2 gap-5">
+        <div class="card p-6 reveal"><h3 class="text-xl font-bold mb-2">Unified Customer Profile</h3><p class="mini">The golden-record view used for segmentation after merging all source contributors.</p></div>
+        <div class="card p-6 reveal"><h3 class="text-xl font-bold mb-2">Contextual Profile</h3><p class="mini">The source-level contributor view — individual records from Salesforce, Marketo, etc.</p></div>
+        <div class="card p-6 reveal"><h3 class="text-xl font-bold mb-2">Indicators</h3><p class="mini">The KPI engine — activity, calculated, predictive indicators. Use these, not raw activity counts.</p></div>
+        <div class="card p-6 reveal"><h3 class="text-xl font-bold mb-2">Segments</h3><p class="mini">Classification layer — Gold / Silver / Platinum or Low / Medium / High — based on indicator thresholds.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 6: Use case -->
+  <section class="slide" data-slide="6">
+    <div class="gradient-mesh"><div class="blob" style="width:300px;height:300px;bottom:-70px;left:-50px;background:#2563eb;opacity:.08"></div></div>
+    <div class="content">
+      <h2 class="font-display text-5xl mb-3 reveal">How a real use case would work</h2>
+      <p class="text-base text-text-secondary mb-4 reveal">Account → contact cross-profile pattern — the core blueprint.</p>
+      <div class="reveal mb-5">
+        <svg viewBox="0 0 900 70" class="arch-svg" style="max-height:70px" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="ua" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#2563eb"/></marker></defs>
+          <rect x="5" y="8" width="200" height="54" rx="12" fill="white" stroke="rgba(15,23,42,0.1)" stroke-width="1.5"/><text x="105" y="30" text-anchor="middle" font-family="Manrope" font-size="10" font-weight="700" fill="#0f766e">STEP 1</text><text x="105" y="48" text-anchor="middle" font-family="Manrope" font-size="11.5" font-weight="700" fill="#102033">ICP / Target Universe</text>
+          <line x1="207" y1="35" x2="227" y2="35" stroke="#2563eb" stroke-width="2" marker-end="url(#ua)"/>
+          <rect x="229" y="8" width="200" height="54" rx="12" fill="white" stroke="rgba(15,23,42,0.1)" stroke-width="1.5"/><text x="329" y="30" text-anchor="middle" font-family="Manrope" font-size="10" font-weight="700" fill="#0f766e">STEP 2</text><text x="329" y="48" text-anchor="middle" font-family="Manrope" font-size="11.5" font-weight="700" fill="#102033">Filter Accounts</text>
+          <line x1="431" y1="35" x2="451" y2="35" stroke="#2563eb" stroke-width="2" marker-end="url(#ua)"/>
+          <rect x="453" y="8" width="200" height="54" rx="12" fill="white" stroke="rgba(15,23,42,0.1)" stroke-width="1.5"/><text x="553" y="30" text-anchor="middle" font-family="Manrope" font-size="10" font-weight="700" fill="#0f766e">STEP 3</text><text x="553" y="48" text-anchor="middle" font-family="Manrope" font-size="11.5" font-weight="700" fill="#102033">Switch to Contacts</text>
+          <line x1="655" y1="35" x2="675" y2="35" stroke="#2563eb" stroke-width="2" marker-end="url(#ua)"/>
+          <rect x="677" y="8" width="218" height="54" rx="12" fill="#0f766e"/><text x="786" y="30" text-anchor="middle" font-family="Manrope" font-size="10" font-weight="700" fill="rgba(255,255,255,0.8)">STEP 4</text><text x="786" y="48" text-anchor="middle" font-family="Manrope" font-size="11.5" font-weight="700" fill="#fff">Activate → Marketo / CX Flow</text>
+        </svg>
+      </div>
+      <div class="timeline">
+        <div class="item reveal"><div class="pill mb-2">Step 1</div><h3 class="text-lg font-bold mb-1">ICP / target universe</h3><p class="mini">Mandatory starting point for Concur once ICPs are in CDP.</p></div>
+        <div class="item reveal"><div class="pill mb-2">Step 2</div><h3 class="text-lg font-bold mb-1">Filter accounts</h3><p class="mini">Region, industry, status, opportunity exclusions, engagement model.</p></div>
+        <div class="item reveal"><div class="pill mb-2">Step 3</div><h3 class="text-lg font-bold mb-1">Switch to contacts</h3><p class="mini">Buyer roles, relationship type, email eligibility, direct marketing consent.</p></div>
+        <div class="item reveal"><div class="pill mb-2">Step 4</div><h3 class="text-lg font-bold mb-1">Activate</h3><p class="mini">Batch to Marketo, or CX Flow triggered in real time.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 7: Why CDP matters -->
+  <section class="slide" data-slide="7">
+    <div class="gradient-mesh"><div class="blob" style="width:320px;height:320px;top:-100px;right:-40px;background:#f59e0b;opacity:.08"></div></div>
+    <div class="content">
+      <h2 class="font-display text-5xl mb-5 reveal">Why CDP is relevant to Concur</h2>
+      <div class="grid grid-cols-3 gap-5 mt-4">
+        <div class="card p-6 reveal"><div class="big mb-3">1</div><h3 class="text-xl font-bold mb-2">Off-SFDC readiness</h3><p class="mini">A future audience and activation layer not dependent on SFDC-centric processes.</p></div>
+        <div class="card p-6 reveal"><div class="big mb-3">2</div><h3 class="text-xl font-bold mb-2">Better T&amp;E targeting</h3><p class="mini">Customer, account, pipeline, and engagement signals combined into precise T&amp;E audiences.</p></div>
+        <div class="card p-6 reveal"><div class="big mb-3">3</div><h3 class="text-xl font-bold mb-2">North Star alignment</h3><p class="mini">Fits the move toward harmonized buying-group and customer-data architecture across SAP.</p></div>
+      </div>
+      <div class="card p-7 mt-5 reveal" style="background:linear-gradient(135deg,rgba(15,118,110,.06),rgba(37,99,235,.04))">
+        <h3 class="text-xl font-bold mb-2">In plain English</h3>
+        <p class="text-base text-text-secondary leading-relaxed">CDP can take Concur's target account logic, buyer-role logic, and campaign eligibility rules, then activate them consistently into Marketo — without rebuilding everything in each tool separately.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 8: Roadmap -->
+  <section class="slide" data-slide="8">
+    <div class="gradient-mesh"><div class="blob" style="width:330px;height:330px;bottom:-80px;right:-40px;background:#0f766e;opacity:.1"></div></div>
+    <div class="content">
+      <h2 class="font-display text-5xl mb-3 reveal">Updated roadmap</h2>
+      <p class="text-base text-text-secondary mb-4 reveal">Now updated with the October Concur CDP proof-of-concept path.</p>
+      <div class="reveal mb-4">
+        <svg viewBox="0 0 900 34" class="arch-svg" style="max-height:34px" xmlns="http://www.w3.org/2000/svg">
+          <line x1="50" y1="17" x2="850" y2="17" stroke="#e2e8f0" stroke-width="3"/>
+          <circle cx="50" cy="17" r="10" fill="#0f766e"/><circle cx="250" cy="17" r="10" fill="#0f766e"/><circle cx="450" cy="17" r="10" fill="#0f766e"/>
+          <circle cx="650" cy="17" r="10" fill="#f59e0b"/><circle cx="848" cy="17" r="10" fill="#2563eb"/>
+          <text x="50" y="10" text-anchor="middle" font-family="Manrope" font-size="9" font-weight="700" fill="#0f766e">LEARN</text>
+          <text x="250" y="10" text-anchor="middle" font-family="Manrope" font-size="9" font-weight="700" fill="#0f766e">DEFINE</text>
+          <text x="450" y="10" text-anchor="middle" font-family="Manrope" font-size="9" font-weight="700" fill="#0f766e">TEST</text>
+          <text x="650" y="10" text-anchor="middle" font-family="Manrope" font-size="9" font-weight="700" fill="#f59e0b">31 OCT</text>
+          <text x="848" y="10" text-anchor="middle" font-family="Manrope" font-size="9" font-weight="700" fill="#2563eb">SCALE</text>
+        </svg>
+      </div>
+      <div class="grid grid-cols-5 gap-4">
+        <div class="card p-4 reveal"><div class="pill mb-2">Learn</div><h3 class="text-lg font-bold mb-2">Understand the pattern</h3><p class="mini">Source systems → unify → indicators → activate.</p></div>
+        <div class="card p-4 reveal"><div class="pill mb-2">Define</div><h3 class="text-lg font-bold mb-2">Pick 2–3 use cases</h3><p class="mini">Prioritize T&amp;E marketing scenarios, then choose one sandbox POC.</p></div>
+        <div class="card p-4 reveal"><div class="pill mb-2">Test</div><h3 class="text-lg font-bold mb-2">CDP → Marketo first</h3><p class="mini">Lower risk, directly tied to marketing execution in sandbox.</p></div>
+        <div class="card p-4 reveal"><div class="pill-amber pill mb-2">31 Oct</div><h3 class="text-lg font-bold mb-2">Submit PI dependencies</h3><p class="mini">Dev, BTP, access, config, and Nitin-team requirements before PI Planning.</p></div>
+        <div class="card p-4 reveal"><div class="pill-blue pill mb-2">Scale</div><h3 class="text-lg font-bold mb-2">Build and expand</h3><p class="mini">Validate pilot, add more use cases, layer in buying-group logic.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 9: Kickoff decisions -->
+  <section class="slide" data-slide="9">
+    <div class="gradient-mesh">
+      <div class="blob" style="width:360px;height:360px;top:-90px;right:-70px;background:#2563eb;opacity:.12"></div>
+      <div class="blob" style="width:230px;height:230px;bottom:-50px;left:-50px;background:#f59e0b;opacity:.08"></div>
+    </div>
+    <div class="content">
+      <h2 class="font-display text-5xl mb-3 reveal">Kickoff decisions</h2>
+      <p class="text-base text-text-secondary mb-5 reveal">The practical project layer agreed in the October kickoff call.</p>
+      <div class="grid grid-cols-2 gap-5">
+        <div class="card p-6 reveal"><div class="pill mb-2">Operating model</div><h3 class="text-2xl font-bold mb-2">Crawl, walk, run</h3><p class="mini">Start with one narrow but meaningful Concur use case. Prove value first, then expand.</p></div>
+        <div class="card p-6 reveal"><div class="pill mb-2">Activation strategy</div><h3 class="text-2xl font-bold mb-2">Marketo first</h3><p class="mini">First path is CDP to Marketo in sandbox — lower risk, directly tied to marketing execution.</p></div>
+        <div class="card p-6 reveal"><div class="pill mb-2">Cadence</div><h3 class="text-2xl font-bold mb-2">Bi-weekly minimum</h3><p class="mini">At least two-week sprint cadence, with tighter check-ins early in the proof of concept.</p></div>
+        <div class="card p-6 reveal"><div class="pill mb-2">Scope guardrail</div><h3 class="text-2xl font-bold mb-2">Don't block on SFDC transition</h3><p class="mini">The wider Sales Cloud future-state discussion must not delay the immediate Concur CDP POC.</p></div>
+      </div>
+      <div class="card p-5 mt-5 reveal" style="background:rgba(239,68,68,.04);border-color:rgba(239,68,68,.2)">
+        <strong class="text-red-600">Critical gate:</strong>
+        <p class="mini mt-1">All work requiring Dev, BTP, access provisioning, technical config, or Nitin-team support must be submitted as formal PI requirements by <strong>31 October</strong>, before November PI Planning.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 10: Closing -->
+  <section class="slide" data-slide="10">
+    <div class="gradient-mesh">
+      <div class="blob" style="width:380px;height:380px;top:-80px;right:-80px;background:#2563eb;opacity:.12"></div>
+      <div class="blob" style="width:280px;height:280px;bottom:-60px;left:-50px;background:#0f766e;opacity:.1"></div>
+      <div class="blob" style="width:220px;height:220px;top:48%;left:18%;background:#f59e0b;opacity:.08"></div>
+    </div>
+    <div class="content text-center">
+      <div class="text-[88px] mb-4 reveal">🗺️</div>
+      <h2 class="font-display text-[clamp(2.6rem,6vw,4.6rem)] mb-5 reveal">One-line mental model + next action</h2>
+      <div class="reveal mb-6">
+        <svg viewBox="0 0 700 52" class="arch-svg" style="max-width:680px;max-height:52px;margin:0 auto" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="ca" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#64748b"/></marker></defs>
+          <rect x="5" y="8" width="165" height="36" rx="10" fill="white" stroke="rgba(15,23,42,0.1)" stroke-width="1.5"/><text x="87" y="30" text-anchor="middle" font-family="Manrope" font-size="12" font-weight="700" fill="#334155">Marketo / Salesforce</text>
+          <line x1="172" y1="26" x2="208" y2="26" stroke="#64748b" stroke-width="1.5" marker-end="url(#ca)"/>
+          <rect x="210" y="4" width="150" height="44" rx="14" fill="#0f766e"/>
+          <text x="285" y="24" text-anchor="middle" font-family="Manrope" font-size="11" font-weight="800" fill="rgba(255,255,255,0.75)">SAP CDP</text>
+          <text x="285" y="40" text-anchor="middle" font-family="DM Serif Display,serif" font-size="12" font-style="italic" fill="rgba(255,255,255,0.65)">audience + identity layer</text>
+          <line x1="362" y1="26" x2="398" y2="26" stroke="#64748b" stroke-width="1.5" marker-end="url(#ca)"/>
+          <rect x="400" y="8" width="130" height="36" rx="10" fill="white" stroke="rgba(15,23,42,0.1)" stroke-width="1.5"/><text x="465" y="30" text-anchor="middle" font-family="Manrope" font-size="12" font-weight="700" fill="#334155">Demandbase + others</text>
+          <line x1="532" y1="26" x2="568" y2="26" stroke="#64748b" stroke-width="1.5" marker-end="url(#ca)"/>
+          <rect x="570" y="8" width="120" height="36" rx="10" fill="white" stroke="rgba(15,23,42,0.1)" stroke-width="1.5"/><text x="630" y="30" text-anchor="middle" font-family="Manrope" font-size="12" font-weight="700" fill="#334155">Concur audiences</text>
+        </svg>
+      </div>
+      <p class="text-[clamp(1rem,2vw,1.3rem)] text-text-secondary max-w-[860px] mx-auto leading-relaxed reveal">CDP is not replacing your stack — it is the audience and identity layer that connects it. Immediate next action: define 2–3 Concur use cases, select one sandbox pilot, and submit PI dependencies by <strong>31 October</strong>.</p>
+      <div class="mt-8 flex items-center justify-center gap-3 reveal">
+        <span class="pill">← → to navigate</span>
+        <span class="pill-amber pill">PI gate: 31 October</span>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="nav-controls">
+  <button class="nav-btn" onclick="changeSlide(-1)">&#8249;</button>
+  <div class="slide-dots" id="dots"></div>
+  <button class="nav-btn" onclick="changeSlide(1)">&#8250;</button>
+  <span class="slide-counter" id="counter">1 / 10</span>
+</div>
+<div class="hint">← → to navigate</div>
+
+<script>
+let current = 1;
+const total = document.querySelectorAll('.slide').length;
+const dotsContainer = document.getElementById('dots');
+const counter = document.getElementById('counter');
+const progress = document.getElementById('progress');
+for (let i = 1; i <= total; i++) {
+  const dot = document.createElement('div');
+  dot.className = 'dot' + (i === 1 ? ' active' : '');
+  dot.onclick = () => goToSlide(i);
+  dotsContainer.appendChild(dot);
+}
+function goToSlide(n) {
+  document.querySelector('.slide.active')?.classList.remove('active');
+  const next = document.querySelector(`.slide[data-slide="${n}"]`);
+  if (next) { next.classList.add('active'); animateSlide(next); }
+  current = n; updateNav();
+}
+function changeSlide(dir) { let n = current + dir; if (n < 1) n = total; if (n > total) n = 1; goToSlide(n); }
+function updateNav() {
+  document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i + 1 === current));
+  counter.textContent = current + ' / ' + total;
+  progress.style.width = ((current / total) * 100) + '%';
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); changeSlide(1); }
+  if (e.key === 'ArrowLeft') { e.preventDefault(); changeSlide(-1); }
+});
+let tx = 0;
+document.addEventListener('touchstart', e => { tx = e.touches[0].clientX; });
+document.addEventListener('touchend', e => { const d = tx - e.changedTouches[0].clientX; if (Math.abs(d) > 50) changeSlide(d > 0 ? 1 : -1); });
+function animateSlide(slide) {
+  slide.querySelectorAll('.reveal').forEach((el, i) => {
+    el.style.transition = 'none'; el.style.opacity = '0'; el.style.transform = 'translateY(20px)'; el.offsetHeight;
+    el.style.transition = `opacity 0.35s ease ${i * 0.065}s, transform 0.35s ease ${i * 0.065}s`;
+    el.style.opacity = '1'; el.style.transform = 'translateY(0)';
+  });
+}
+updateNav(); animateSlide(document.querySelector('.slide.active'));
+</script>
+</body>
+</html>

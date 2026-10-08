@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CDP Kickoff — Concur / Immersive</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300..800&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #060d16;
+      --surface: rgba(255,255,255,0.04);
+      --border: rgba(255,255,255,0.07);
+      --border-glow: rgba(0,207,180,0.3);
+      --teal: #00cfb4;
+      --teal-dim: rgba(0,207,180,0.15);
+      --blue: #4f8eff;
+      --amber: #fbbf24;
+      --red: #f87171;
+      --text: #e2eaf5;
+      --muted: rgba(226,234,245,0.45);
+      --font-display: 'DM Serif Display', serif;
+      --font-body: 'Manrope', sans-serif;
+    }
+
+    html, body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      height: 100vh; width: 100vw;
+      overflow: hidden;
+      cursor: none;
+    }
+
+    /* ── Custom Cursor ── */
+    #cur-dot {
+      position: fixed; top: 0; left: 0; z-index: 9999;
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--teal);
+      pointer-events: none;
+      transform: translate(-50%,-50%);
+      transition: width .15s, height .15s, background .15s;
+      box-shadow: 0 0 8px var(--teal);
+    }
+    #cur-ring {
+      position: fixed; top: 0; left: 0; z-index: 9998;
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 1.5px solid rgba(0,207,180,0.4);
+      pointer-events: none;
+      transform: translate(-50%,-50%);
+      transition: width .3s, height .3s, border-color .3s;
+    }
+    body:has(a:hover, button:hover) #cur-dot { width: 12px; height: 12px; }
+    body:has(a:hover, button:hover) #cur-ring { width: 52px; height: 52px; border-color: rgba(0,207,180,0.6); }
+
+    /* ── Canvas ── */
+    #bg-canvas {
+      position: fixed; inset: 0; z-index: 0;
+      pointer-events: none;
+    }
+
+    /* ── Progress ── */
+    #progress {
+      position: fixed; top: 0; left: 0; height: 2px; z-index: 200;
+      background: linear-gradient(90deg, var(--teal), var(--blue));
+      transition: width .45s cubic-bezier(.4,0,.2,1);
+      box-shadow: 0 0 12px var(--teal);
+    }
+
+    /* ── Deck & Slides ── */
+    .deck { position: relative; width: 100vw; height: 100vh; }
+
+    .slide {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      opacity: 0;
+      filter: blur(8px);
+      transform: scale(1.02);
+      transition: opacity .5s ease, filter .5s ease, transform .5s ease;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 1;
+    }
+    .slide.active {
+      opacity: 1; filter: blur(0); transform: scale(1);
+      pointer-events: all; z-index: 2;
+    }
+    .slide > .content {
+      position: relative; z-index: 10;
+      width: 100%; max-width: 1200px;
+      padding: clamp(1.4rem,3.5vw,2.8rem);
+    }
+
+    /* ── Vignette on each slide ── */
+    .slide::after {
+      content: ''; position: absolute; inset: 0; z-index: 5;
+      pointer-events: none;
+      background: radial-gradient(ellipse at center, transparent 50%, rgba(6,13,22,.55) 100%);
+    }
+
+    /* ── Floating orbs ── */
+    .orb {
+      position: absolute; border-radius: 50%;
+      filter: blur(80px); animation: orb-float 20s ease-in-out infinite;
+      pointer-events: none;
+    }
+    @keyframes orb-float {
+      0%,100% { transform: translate(0,0) scale(1); }
+      33% { transform: translate(30px,-25px) scale(1.06); }
+      66% { transform: translate(-20px,15px) scale(.96); }
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      backdrop-filter: blur(16px);
+      transition: transform .3s ease, border-color .3s ease, box-shadow .3s ease;
+      transform-style: preserve-3d;
+      will-change: transform;
+    }
+    .card:hover {
+      border-color: var(--border-glow);
+      box-shadow: 0 0 0 1px rgba(0,207,180,.12), 0 20px 60px rgba(0,0,0,.4), 0 0 40px rgba(0,207,180,.06);
+    }
+
+    /* ── Glassmorphism highlight bar ── */
+    .card-glow-bar {
+      height: 2px; border-radius: 999px;
+      background: linear-gradient(90deg, var(--teal), var(--blue));
+      margin-bottom: 16px;
+      opacity: 0;
+      transition: opacity .3s;
+    }
+    .card:hover .card-glow-bar { opacity: 1; }
+
+    /* ── Pills ── */
+    .pill {
+      display: inline-block; padding: 4px 12px;
+      border-radius: 999px; font-size: .72rem; font-weight: 700;
+      letter-spacing: .05em; text-transform: uppercase;
+    }
+    .pill-teal { background: rgba(0,207,180,.12); color: var(--teal); border: 1px solid rgba(0,207,180,.2); }
+    .pill-blue { background: rgba(79,142,255,.12); color: var(--blue); border: 1px solid rgba(79,142,255,.2); }
+    .pill-amber { background: rgba(251,191,36,.1); color: var(--amber); border: 1px solid rgba(251,191,36,.2); }
+    .pill-red { background: rgba(248,113,113,.1); color: var(--red); border: 1px solid rgba(248,113,113,.2); }
+
+    /* ── Typography ── */
+    .display { font-family: var(--font-display); }
+    h1, h2 { font-family: var(--font-display); }
+    .gradient-text {
+      background: linear-gradient(135deg, var(--teal) 0%, var(--blue) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .muted { color: var(--muted); }
+
+    /* ── Reveal ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      filter: blur(5px);
+    }
+
+    /* ── Divider ── */
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+      margin: 16px 0;
+    }
+
+    /* ── Grid helpers ── */
+    .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    .g4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 14px; }
+    .g5 { display: grid; grid-template-columns: repeat(5,1fr); gap: 12px; }
+
+    /* ── Table ── */
+    .tableish { display: grid; grid-template-columns: 1.1fr 1.4fr 1.4fr 1.4fr; gap: 8px; }
+    .cell { padding: 12px 14px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border); font-size: .84rem; line-height: 1.45; color: var(--muted); }
+    .cell strong { color: var(--text); display: block; margin-bottom: 2px; }
+    .cell.head { background: rgba(0,207,180,.07); border-color: rgba(0,207,180,.15); font-weight: 800; font-size: .74rem; color: var(--teal); letter-spacing: .06em; text-transform: uppercase; }
+
+    /* ── Timeline ── */
+    .tl { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; }
+    .tl-item { padding: 18px; border-radius: 18px; background: var(--surface); border: 1px solid var(--border); position: relative; }
+    .tl-item::before { content: ''; position: absolute; top: -8px; left: 20px; width: 13px; height: 13px; border-radius: 50%; background: var(--teal); box-shadow: 0 0 0 5px rgba(0,207,180,.15), 0 0 12px rgba(0,207,180,.4); }
+
+    /* ── SVG Diagrams ── */
+    .arch-svg { width: 100%; height: auto; display: block; }
+
+    /* ── Nav ── */
+    .nav {
+      position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%);
+      display: flex; align-items: center; gap: 14px; z-index: 500;
+      background: rgba(6,13,22,.8); backdrop-filter: blur(20px);
+      padding: 10px 20px; border-radius: 999px;
+      border: 1px solid var(--border);
+      box-shadow: 0 0 0 1px rgba(0,207,180,.06), 0 8px 32px rgba(0,0,0,.5);
+    }
+    .nav-btn {
+      width: 38px; height: 38px; border: none; border-radius: 999px;
+      background: rgba(255,255,255,.05); color: var(--teal);
+      font-size: 1.2rem; cursor: none; transition: background .15s;
+    }
+    .nav-btn:hover { background: rgba(0,207,180,.12); }
+    .dots { display: flex; gap: 7px; }
+    .dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: rgba(255,255,255,.15); cursor: none; transition: all .25s;
+    }
+    .dot.active { background: var(--teal); width: 20px; border-radius: 4px; box-shadow: 0 0 8px var(--teal); }
+    .slide-num { font-size: .76rem; font-weight: 700; color: var(--muted); min-width: 38px; text-align: center; }
+
+    /* ── Big number ── */
+    .big-num { font-size: clamp(2.4rem,4vw,3.6rem); font-weight: 800; line-height: 1; }
+
+    /* ── Mini text ── */
+    .mini { font-size: .84rem; color: var(--muted); line-height: 1.55; }
+
+    /* ── Animated border ── */
+    @property --angle { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
+    .animated-border {
+      border: 1px solid transparent;
+      background: linear-gradient(var(--bg), var(--bg)) padding-box,
+                  conic-gradient(from var(--angle), var(--teal), var(--blue), var(--teal)) border-box;
+      animation: spin-border 4s linear infinite;
+    }
+    @keyframes spin-border { to { --angle: 360deg; } }
+
+    /* ── Gate card ── */
+    .gate-card {
+      background: rgba(248,113,113,.05);
+      border: 1px solid rgba(248,113,113,.2);
+      border-radius: 18px; padding: 18px 22px;
+    }
+
+    /* ── Hint ── */
+    .hint { position: fixed; bottom: 22px; right: 24px; font-size: .7rem; color: rgba(255,255,255,.2); z-index: 500; }
+  </style>
+</head>
+<body>
+
+<div id="cur-dot"></div>
+<div id="cur-ring"></div>
+<canvas id="bg-canvas"></canvas>
+<div id="progress"></div>
+
+<div class="deck">
+
+  <!-- ═══ SLIDE 1: Title ═══ -->
+  <section class="slide active" data-slide="1">
+    <div class="orb" style="width:500px;height:500px;top:-150px;right:-100px;background:var(--teal);opacity:.07"></div>
+    <div class="orb" style="width:400px;height:400px;bottom:-120px;left:-80px;background:var(--blue);opacity:.07;animation-delay:-7s"></div>
+    <div class="orb" style="width:280px;height:280px;top:40%;left:15%;background:var(--amber);opacity:.05;animation-delay:-14s"></div>
+    <div class="content" style="text-align:center">
+      <div style="font-size:80px;margin-bottom:20px;line-height:1" class="reveal">🚀</div>
+      <h1 style="font-size:clamp(2.8rem,6.5vw,5.4rem);line-height:1.02;margin-bottom:20px" class="reveal gradient-text">CDP Kickoff — Concur</h1>
+      <p style="font-size:clamp(1rem,2vw,1.3rem);max-width:820px;margin:0 auto 28px;line-height:1.65" class="muted reveal">October proof-of-concept plan, sandbox activation path, operating model decisions, and the PI-planning gate — everything agreed in the kickoff call.</p>
+      <div style="display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap" class="reveal">
+        <span class="pill pill-teal">10 slides</span>
+        <span class="pill pill-amber">October kickoff</span>
+        <span class="pill pill-red">PI gate: 31 Oct</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ SLIDE 2: What CDP Is ═══ -->
+  <section class="slide" data-slide="2">
+    <div class="orb" style="width:380px;height:380px;top:-80px;right:-60px;background:var(--teal);opacity:.06"></div>
+    <div class="content">
+      <h2 style="font-size:clamp(2rem,4.5vw,3.4rem);margin-bottom:8px" class="reveal">What CDP actually is</h2>
+      <p class="muted mini reveal" style="margin-bottom:20px">The layer between your source systems and activation tools.</p>
+      <div class="reveal" style="margin-bottom:18px">
+        <svg viewBox="0 0 900 148" class="arch-svg" style="max-height:148px" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f8eff"/></marker>
+            <marker id="ah2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#00cfb4"/></marker>
+          </defs>
+          <rect x="8" y="8" width="210" height="132" rx="18" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.08)" stroke-width="1.5"/>
+          <text x="113" y="34" text-anchor="middle" font-family="Manrope" font-weight="800" font-size="11" fill="rgba(226,234,245,0.4)" letter-spacing="0.08em">SOURCE SYSTEMS</text>
+          <rect x="22" y="44" width="180" height="22" rx="7" fill="rgba(255,255,255,0.06)"/><text x="112" y="59" text-anchor="middle" font-family="Manrope" font-size="11.5" font-weight="600" fill="rgba(226,234,245,0.75)">Salesforce CRM</text>
+          <rect x="22" y="72" width="180" height="22" rx="7" fill="rgba(255,255,255,0.06)"/><text x="112" y="87" text-anchor="middle" font-family="Manrope" font-size="11.5" font-weight="600" fill="rgba(226,234,245,0.75)">Marketo</text>
+          <rect x="22" y="100" width="86" height="22" rx="7" fill="rgba(255,255,255,0.06)"/><text x="65" y="115" text-anchor="middle" font-family="Manrope" font-size="11" font-weight="600" fill="rgba(226,234,245,0.75)">MDG</text>
+          <rect x="116" y="100" width="86" height="22" rx="7" fill="rgba(255,255,255,0.06)"/><text x="159" y="115" text-anchor="middle" font-family="Manrope" font-size="11" font-weight="600" fill="rgba(226,234,245,0.75)">Outreach</text>
+          <line x1="220" y1="74" x2="284" y2="74" stroke="#4f8eff" stroke-width="2" marker-end="url(#ah)" stroke-dasharray="5,3"/>
+          <text x="252" y="66" text-anchor="middle" font-family="Manrope" font-size="9" fill="rgba(226,234,245,0.3)" font-weight="600">Ingest</text>
+          <!-- CDP box -->
+          <rect x="286" y="4" width="328" height="140" rx="22" fill="rgba(0,207,180,0.12)" stroke="rgba(0,207,180,0.3)" stroke-width="1.5"/>
+          <text x="450" y="32" text-anchor="middle" font-family="Manrope" font-weight="800" font-size="11" fill="rgba(0,207,180,0.8)" letter-spacing="0.12em">SAP CDP</text>
+          <rect x="302" y="42" width="296" height="26" rx="9" fill="rgba(0,207,180,0.1)" stroke="rgba(0,207,180,0.15)" stroke-width="1"/>
+          <text x="450" y="59" text-anchor="middle" font-family="Manrope" font-size="12" font-weight="700" fill="#e2eaf5">🔗  Identity Resolution &amp; Unification</text>
+          <rect x="302" y="76" width="138" height="26" rx="9" fill="rgba(0,207,180,0.07)"/><text x="371" y="93" text-anchor="middle" font-family="Manrope" font-size="11" font-weight="600" fill="rgba(226,234,245,0.8)">Indicators / Segments</text>
+          <rect x="448" y="76" width="150" height="26" rx="9" fill="rgba(79,142,255,0.07)"/><text x="523" y="93" text-anchor="middle" font-family="Manrope" font-size="11" font-weight="600" fill="rgba(226,234,245,0.8)">Explorations / CX Flows</text>
+          <text x="450" y="128" text-anchor="middle" font-family="DM Serif Display,serif" font-size="13" font-style="italic" fill="rgba(0,207,180,0.45)">One unified customer profile</text>
+          <line x1="616" y1="74" x2="678" y2="74" stroke="#00cfb4" stroke-width="2" marker-end="url(#ah2)" stroke-dasharray="5,3"/>
+          <text x="647" y="66" text-anchor="middle" font-family="Manrope" font-size="9" fill="rgba(226,234,245,0.3)" font-weight="600">Activate</text>
+          <rect x="680" y="8" width="212" height="132" rx="18" fill="rgba(255,255,255,0.04)" stroke="rgba(0,207,180,0.2)" stroke-width="1.5"/>
+          <text x="786" y="34" text-anchor="middle" font-family="Manrope" font-weight="800" font-size="11" fill="rgba(0,207,180,0.6)" letter-spacing="0.08em">ACTIVATION</text>
+          <rect x="696" y="44" width="180" height="22" rx="7" fill="rgba(0,207,180,0.08)"/><text x="786" y="59" text-anchor="middle" font-family="Manrope" font-size="11.5" font-weight="600" fill="#00cfb4">Marketo</text>
+          <rect x="696" y="72" width="180" height="22" rx="7" fill="rgba(0,207,180,0.08)"/><text x="786" y="87" text-anchor="middle" font-family="Manrope" font-size="11.5" font-weight="600" fill="#00cfb4">Salesforce</text>
+          <rect x="696" y="100" width="86" height="22" rx="7" fill="rgba(0,207,180,0.08)"/><text x="739" y="115" text-anchor="middle" font-family="Manrope" font-size="11" font-weight="600" fill="#00cfb4">Demandbase</text>
+          <rect x="790" y="100" width="86" height="22" rx="7" fill="rgba(0,207,180,0.08)"/><text x="833" y="115" text-anchor="middle" font-family="Manrope" font-size="10.5" font-weight="600" fill="#00cfb4">S3 / Other</text>
+        </svg>
+      </div>
+      <div class="g2">
+        <div class="card p-6 reveal" style="padding:20px 22px">
+          <div class="card-glow-bar"></div>
+          <span class="pill pill-teal" style="margin-bottom:10px;display:inline-block">Simple view</span>
+          <p style="font-size:1.1rem;font-weight:700;line-height:1.4;margin-bottom:12px">The layer between source systems and activation tools.</p>
+          <ul class="mini" style="list-style:none;display:flex;flex-direction:column;gap:6px">
+            <li style="padding-left:14px;position:relative"><span style="position:absolute;left:0;color:var(--teal)">›</span>Ingests from CRM, Marketo, Sales Cloud, Outreach, MDG.</li>
+            <li style="padding-left:14px;position:relative"><span style="position:absolute;left:0;color:var(--teal)">›</span>Resolves duplicates into one unified customer profile.</li>
+            <li style="padding-left:14px;position:relative"><span style="position:absolute;left:0;color:var(--teal)">›</span>Sends segments and triggers downstream.</li>
+          </ul>
+        </div>
+        <div class="card p-6 reveal" style="padding:20px 22px">
+          <div class="card-glow-bar"></div>
+          <span class="pill pill-blue" style="margin-bottom:10px;display:inline-block">Why it matters</span>
+          <p style="font-size:1.1rem;font-weight:700;line-height:1.4;margin-bottom:12px">One trusted audience layer instead of working separately in each tool.</p>
+          <ul class="mini" style="list-style:none;display:flex;flex-direction:column;gap:6px">
+            <li style="padding-left:14px;position:relative"><span style="position:absolute;left:0;color:var(--blue)">›</span>Marketo becomes execution engine, not system of truth.</li>
+            <li style="padding-left:14px;position:relative"><span style="position:absolute;left:0;color:var(--blue)">›</span>Salesforce provides CRM facts and opportunity context.</li>
+            <li style="padding-left:14px;position:relative"><span style="position:absolute;left:0;color:var(--blue)">›</span>Demandbase becomes an intelligence input layer.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ SLIDE 3: Core Flow ═══ -->
+  <section class="slide" data-slide="3">
+    <div class="orb" style="width:420px;height:420px;top:-100px;right:-80px;background:var(--blue);opacity:.06"></div>
+    <div class="content">
+      <h2 style="font-size:clamp(2rem,4.5vw,3.4rem);margin-bottom:6px" class="reveal">The core CDP flow</h2>
+      <p class="muted mini reveal" style="margin-bottom:20px">Collect → unify → segment → activate.</p>
+      <div class="reveal" style="margin-bottom:18px">
+        <svg viewBox="0 0 900 130" class="arch-svg" style="max-height:130px" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="fa" markerWidth="10" markerHeight="8" refX="8" refY="4" orient="auto"><path d="M0,0 L0,8 L10,4 z" fill="#4f8eff"/></marker></defs>
+          <rect x="6" y="8" width="172" height="114" rx="18" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.07)" stroke-width="1.5"/>
+          <rect x="18" y="16" width="80" height="22" rx="11" fill="rgba(0,207,180,0.1)" stroke="rgba(0,207,180,0.2)" stroke-width="1"/>
+          <text x="58" y="31" text-anchor="middle" font-family="Manrope" font-size="10" font-weight="700" fill="#00cfb4">1. INGEST</text>
+          <text x="92" y="58" text-anchor="middle" font-family="Manrope" font-size="13" font-weight="800" fill="#e2eaf5">Source</text>
+          <text x="92" y="74" text-anchor="middle" font-family="Manrope" font-size="13" font-weight="800" fill="#e2eaf5">Systems</text>
+          <text x="92" y="97" text-anchor="middle" font-family="Manrope" font-size="10" fill="rgba(226,234,245,0.4)">CRM, Marketo, MDG,</text>
+          <text x="92" y="112" text-anchor="middle" font-family="Manrope" font-size="10" fill="rgba(226,234,245,0.4)">Outreach, intent data</text>
+          <line x1="180" y1="65" x2="218" y2="65" stroke="#4f8eff" stroke-width="2.5" marker-end="url(#fa)"/>
+          <rect x="220" y="8" width="172" height="114" rx="18" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.07)" stroke-width="1.5"/>
+          <rect x="232" y="16" width="80" height="22" rx="11" fill="rgba(0,207,180,0.1)" stroke="rgba(0,207,180,0.2)" stroke-width="1"/>
+          <text x="272" y="31" text-anchor="middle" font-family="Manrope" font-size="10" font-weight="700" fill="#00cfb4">2. UNIFY</text>
+          <text x="306" y="58" text-anchor="middle" font-family="Manrope" font-size="13" font-weight="800" fill="#e2eaf5">Golden</text>
+          <text x="306" y="74" text-anchor="middle" font-family="Manrope" font-size="13" font-weight="800" fill="#e2eaf5">Record</text>
+          <text x="306" y="97" text-anchor="middle" font-family="Manrope" font-size="10" fill="rgba(226,234,245,0.4)">Identity matching</text>
+          <text x="306" y="112" text-anchor="middle" font-family="Manrope" font-size="10" fill="rgba(226,234,245,0.4)">merges duplicates</text>
+          <line x1="394" y1="65" x2="432" y2="65" stroke="#4f8eff" stroke-width="2.5" marker-end="url(#fa)"/>
+          <rect x="434" y="8" width="172" height="114" rx="18" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.07)" stroke-width="1.5"/>
+          <rect x="446" y="16" width="100" height="22" rx="11" fill="rgba(0,207,180,0.1)" stroke="rgba(0,207,180,0.2)" stroke-width="1"/>
+          <text x="496" y="31" text-anchor="middle" font-family="Manrope" font-size="10" font-weight="700" fill="#00cfb4">3. SEGMENT</text>
+          <text x="520" y="58" text-anchor="middle" font-family="Manrope" font-size="13" font-weight="800" fill="#e2eaf5">Indicators</text>
+          <text x="520" y="74" text-anchor="middle" font-family="Manrope" font-size="13" font-weight="800" fill="#e2eaf5">&amp; Segments</text>
+          <text x="520" y="97" text-anchor="middle" font-family="Manrope" font-size="10" fill="rgba(226,234,245,0.4)">KPIs, scoring,</text>
+          <text x="520" y="112" text-anchor="middle" font-family="Manrope" font-size="10" fill="rgba(226,234,245,0.4)">audience logic</text>
+          <line x1="608" y1="65" x2="646" y2="65" stroke="#4f8eff" stroke-width="2.5" marker-end="url(#fa)"/>
+          <rect x="648" y="4" width="244" height="122" rx="20" fill="rgba(0,207,180,0.1)" stroke="rgba(0,207,180,0.3)" stroke-width="1.5"/>
+          <rect x="660" y="14" width="88" height="22" rx="11" fill="rgba(0,207,180,0.15)"/>
+          <text x="704" y="29" text-anchor="middle" font-family="Manrope" font-size="10" font-weight="700" fill="#00cfb4">4. ACTIVATE</text>
+          <text x="770" y="58" text-anchor="middle" font-family="Manrope" font-size="13" font-weight="800" fill="#e2eaf5">Audiences</text>
+          <text x="770" y="74" text-anchor="middle" font-family="Manrope" font-size="13" font-weight="800" fill="#e2eaf5">&amp; CX Flows</text>
+          <rect x="660" y="88" width="108" height="26" rx="8" fill="rgba(0,207,180,0.08)"/><text x="714" y="105" text-anchor="middle" font-family="Manrope" font-size="10" font-weight="600" fill="#00cfb4">Batch → Marketo</text>
+          <rect x="776" y="88" width="104" height="26" rx="8" fill="rgba(79,142,255,0.08)"/><text x="828" y="105" text-anchor="middle" font-family="Manrope" font-size="10" font-weight="600" fill="#4f8eff">Real-time Flow</text>
+        </svg>
+      </div>
+      <div class="g3">
+        <div class="card reveal" style="padding:18px 20px">
+          <div class="card-glow-bar"></div>
+          <p style="font-size:.72rem;font-weight:700;color:var(--teal);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px">Exploration</p>
+          <p class="mini">Drag-and-drop builder where you define audience logic before publishing.</p>
+        </div>
+        <div class="card reveal" style="padding:18px 20px">
+          <div class="card-glow-bar"></div>
+          <p style="font-size:.72rem;font-weight:700;color:var(--teal);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px">Audience</p>
+          <p class="mini">Scheduled or on-demand batch output pushed to Marketo or S3.</p>
+        </div>
+        <div class="card reveal" style="padding:18px 20px">
+          <div class="card-glow-bar"></div>
+          <p style="font-size:.72rem;font-weight:700;color:var(--teal);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px">CX Flow</p>
+          <p class="mini">Real-time automation triggered by profile updates or indicator changes.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ SLIDE 4: Stack ═══ -->
+  <section class="slide" data-slide="4">
+    <div class="orb" style="width:350px;height:350px;bottom:-80px;right:-60px;background:var(--amber);opacity:.05"></div>
+    <div class="content">
+      <h2 style="font-size:clamp(2rem,4.5vw,3.4rem);margin-bottom:16px" class="reveal">How it relates to your stack</h2>
+      <div class="tableish reveal">
+        <div class="cell head">System</div><div class="cell head">What it gives CDP</div><div class="cell head">What CDP gives back</div><div class="cell head">Why it matters</div>
+        <div class="cell"><strong style="color:#00cfb4">Salesforce</strong>Leads, contacts, accounts, opportunities, pipeline context.</div>
+        <div class="cell" style="color:var(--muted)">Segment-ready audiences and trigger-based actions for lifecycle and sales motion.</div>
+        <div class="cell" style="color:var(--muted)">Cleaner identity resolution and cross-system audience logic.</div>
+        <div class="cell"><strong style="color:var(--blue)">Marketo</strong>Email eligibility, engagement history, program behavior, form responses.</div>
+        <div class="cell" style="color:var(--muted)">Batch audiences and real-time triggers into Marketo lists.</div>
+        <div class="cell" style="color:var(--muted)">Marketo becomes the execution engine; CDP is the audience brain.</div>
+        <div class="cell"><strong style="color:var(--amber)">Demandbase</strong>Intent, fit, buying-stage, account intelligence, ABX signals.</div>
+        <div class="cell" style="color:var(--muted)">Sharper segmentation and harmonized buying-group logic.</div>
+        <div class="cell" style="color:var(--muted)">CDP operationalizes ABX signals into usable campaign audiences.</div>
+        <div class="cell"><strong>Concur / TR</strong>Business context, account priorities, campaign use-case definitions.</div>
+        <div class="cell" style="color:var(--muted)">Targeted T&amp;E audiences and activation patterns.</div>
+        <div class="cell" style="color:var(--muted)">Pilot path for off-SFDC marketing and North Star alignment.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ SLIDE 5: Objects ═══ -->
+  <section class="slide" data-slide="5">
+    <div class="orb" style="width:420px;height:420px;top:-120px;left:-80px;background:var(--teal);opacity:.06"></div>
+    <div class="content">
+      <h2 style="font-size:clamp(2rem,4.5vw,3.4rem);margin-bottom:6px" class="reveal">The objects that matter most</h2>
+      <p class="muted mini reveal" style="margin-bottom:18px">Four concepts needed before building any exploration.</p>
+      <div class="reveal" style="margin-bottom:18px">
+        <svg viewBox="0 0 900 72" class="arch-svg" style="max-height:72px" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="oa" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#00cfb4"/></marker></defs>
+          <rect x="4" y="4" width="188" height="64" rx="14" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.08)" stroke-width="1.5"/>
+          <text x="98" y="30" text-anchor="middle" font-family="Manrope" font-size="12" font-weight="800" fill="#e2eaf5">Contextual Profiles</text>
+          <text x="98" y="48" text-anchor="middle" font-family="Manrope" font-size="10" fill="rgba(226,234,245,0.4)">Source-level records</text>
+          <text x="98" y="62" text-anchor="middle" font-family="Manrope" font-size="10" fill="rgba(226,234,245,0.4)">(SF contact, Mkto lead…)</text>
+          <line x1="194" y1="36" x2="232" y2="36" stroke="#00cfb4" stroke-width="2" marker-end="url(#oa)"/>
+          <rect x="234" y="2" width="196" height="68" rx="16" fill="rgba(0,207,180,0.1)" stroke="rgba(0,207,180,0.3)" stroke-width="1.5"/>
+          <text x="332" y="30" text-anchor="middle" font-family="Manrope" font-size="12" font-weight="800" fill="#00cfb4">Unified Customer Profile</text>
+          <text x="332" y="48" text-anchor="middle" font-family="Manrope" font-size="10" fill="rgba(0,207,180,0.7)">Golden record after</text>
+          <text x="332" y="62" text-anchor="middle" font-family="Manrope" font-size="10" fill="rgba(0,207,180,0.7)">identity resolution</text>
+          <line x1="432" y1="36" x2="470" y2="36" stroke="#00cfb4" stroke-width="2" marker-end="url(#oa)"/>
+          <rect x="472" y="4" width="188" height="64" rx="14" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.08)" stroke-width="1.5"/>
+          <text x="566" y="30" text-anchor="middle" font-family="Manrope" font-size="12" font-weight="800" fill="#e2eaf5">Indicators</text>
+          <text x="566" y="48" text-anchor="middle" font-family="Manrope" font-size="10" fill="rgba(226,234,245,0.4)">Activity, calculated,</text>
+          <text x="566" y="62" text-anchor="middle" font-family="Manrope" font-size="10" fill="rgba(226,234,245,0.4)">predictive KPIs</text>
+          <line x1="662" y1="36" x2="700" y2="36" stroke="#00cfb4" stroke-width="2" marker-end="url(#oa)"/>
+          <rect x="702" y="4" width="192" height="64" rx="14" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.08)" stroke-width="1.5"/>
+          <text x="798" y="30" text-anchor="middle" font-family="Manrope" font-size="12" font-weight="800" fill="#e2eaf5">Segments</text>
+          <text x="798" y="48" text-anchor="middle" font-family="Manrope" font-size="10" fill="rgba(226,234,245,0.4)">Gold/Silver/Platinum,</text>
+          <text x="798" y="62" text-anchor="middle" font-family="Manrope" font-size="10" fill="rgba(226,234,245,0.4)">Low/Mid/High interest</text>
+        </svg>
+      </div>
+      <div class="g2" style="margin-bottom:12px">
+        <div class="card reveal" style="padding:18px 20px"><div class="card-glow-bar"></div><p style="font-weight:800;margin-bottom:6px">Unified Customer Profile</p><p class="mini">Golden-record view used for segmentation after merging all source contributors.</p></div>
+        <div class="card reveal" style="padding:18px 20px"><div class="card-glow-bar"></div><p style="font-weight:800;margin-bottom:6px">Contextual Profile</p><p class="mini">Source-level contributor view — individual records from Salesforce, Marketo, etc.</p></div>
+        <div class="card reveal" style="padding:18px 20px"><div class="card-glow-bar"></div><p style="font-weight:800;margin-bottom:6px">Indicators</p><p class="mini">The KPI engine — activity, calculated, predictive. Use these, not raw activity counts.</p></div>
+        <div class="card reveal" style="padding:18px 20px"><div class="card-glow-bar"></div><p style="font-weight:800;margin-bottom:6px">Segments</p><p class="mini">Classification layer — Gold / Silver / Platinum — based on indicator thresholds.</p></div>
+      </div>
+      <div class="reveal" style="background:rgba(0,207,180,0.05);border:1px solid rgba(0,207,180,0.15);border-radius:14px;padding:12px 16px;font-size:.84rem;color:rgba(226,234,245,0.7)"><span style="color:var(--teal);font-weight:700">Rule: </span>Always use pre-built calculated indicators in explorations, not raw activity counts.</div>
+    </div>
+  </section>
+
+  <!-- ═══ SLIDE 6: Use Case ═══ -->
+  <section class="slide" data-slide="6">
+    <div class="orb" style="width:380px;height:380px;bottom:-90px;left:-70px;background:var(--blue);opacity:.06"></div>
+    <div class="content">
+      <h2 style="font-size:clamp(2rem,4.5vw,3.4rem);margin-bottom:6px" class="reveal">How a real use case works</h2>
+      <p class="muted mini reveal" style="margin-bottom:18px">Account → contact cross-profile — the core blueprint.</p>
+      <div class="reveal" style="margin-bottom:18px">
+        <svg viewBox="0 0 900 62" class="arch-svg" style="max-height:62px" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="ua" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f8eff"/></marker></defs>
+          <rect x="4" y="6" width="198" height="50" rx="12" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.08)" stroke-width="1.5"/>
+          <text x="103" y="26" text-anchor="middle" font-family="Manrope" font-size="9.5" font-weight="700" fill="#00cfb4">STEP 1</text>
+          <text x="103" y="44" text-anchor="middle" font-family="Manrope" font-size="11" font-weight="700" fill="#e2eaf5">ICP / Target Universe</text>
+          <line x1="204" y1="31" x2="226" y2="31" stroke="#4f8eff" stroke-width="2" marker-end="url(#ua)"/>
+          <rect x="228" y="6" width="198" height="50" rx="12" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.08)" stroke-width="1.5"/>
+          <text x="327" y="26" text-anchor="middle" font-family="Manrope" font-size="9.5" font-weight="700" fill="#00cfb4">STEP 2</text>
+          <text x="327" y="44" text-anchor="middle" font-family="Manrope" font-size="11" font-weight="700" fill="#e2eaf5">Filter Accounts</text>
+          <line x1="428" y1="31" x2="450" y2="31" stroke="#4f8eff" stroke-width="2" marker-end="url(#ua)"/>
+          <rect x="452" y="6" width="198" height="50" rx="12" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.08)" stroke-width="1.5"/>
+          <text x="551" y="26" text-anchor="middle" font-family="Manrope" font-size="9.5" font-weight="700" fill="#00cfb4">STEP 3</text>
+          <text x="551" y="44" text-anchor="middle" font-family="Manrope" font-size="11" font-weight="700" fill="#e2eaf5">Switch to Contacts</text>
+          <line x1="652" y1="31" x2="674" y2="31" stroke="#4f8eff" stroke-width="2" marker-end="url(#ua)"/>
+          <rect x="676" y="4" width="220" height="54" rx="14" fill="rgba(0,207,180,0.1)" stroke="rgba(0,207,180,0.3)" stroke-width="1.5"/>
+          <text x="786" y="26" text-anchor="middle" font-family="Manrope" font-size="9.5" font-weight="700" fill="#00cfb4">STEP 4</text>
+          <text x="786" y="44" text-anchor="middle" font-family="Manrope" font-size="11" font-weight="700" fill="#e2eaf5">Activate → Marketo / CX Flow</text>
+        </svg>
+      </div>
+      <div class="tl">
+        <div class="tl-item reveal"><span class="pill pill-teal" style="margin-bottom:8px;display:inline-block">Step 1</span><p style="font-weight:800;margin-bottom:5px;font-size:.95rem">ICP / target universe</p><p class="mini">Mandatory starting point once ICPs are in CDP.</p></div>
+        <div class="tl-item reveal"><span class="pill pill-teal" style="margin-bottom:8px;display:inline-block">Step 2</span><p style="font-weight:800;margin-bottom:5px;font-size:.95rem">Filter accounts</p><p class="mini">Region, industry, status, opportunity exclusions, engagement model.</p></div>
+        <div class="tl-item reveal"><span class="pill pill-teal" style="margin-bottom:8px;display:inline-block">Step 3</span><p style="font-weight:800;margin-bottom:5px;font-size:.95rem">Switch to contacts</p><p class="mini">Buyer roles, email eligibility, direct marketing consent.</p></div>
+        <div class="tl-item reveal" style="border-color:rgba(0,207,180,0.2)"><span class="pill pill-teal" style="margin-bottom:8px;display:inline-block">Step 4</span><p style="font-weight:800;margin-bottom:5px;font-size:.95rem">Activate</p><p class="mini">Batch to Marketo, or CX Flow triggered in real time.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ SLIDE 7: Why ═══ -->
+  <section class="slide" data-slide="7">
+    <div class="orb" style="width:440px;height:440px;top:-120px;right:-60px;background:var(--amber);opacity:.05"></div>
+    <div class="content">
+      <h2 style="font-size:clamp(2rem,4.5vw,3.4rem);margin-bottom:22px" class="reveal">Why CDP is relevant to Concur</h2>
+      <div class="g3" style="margin-bottom:16px">
+        <div class="card reveal" style="padding:22px 24px">
+          <div class="card-glow-bar"></div>
+          <div class="big-num gradient-text" style="margin-bottom:12px">1</div>
+          <p style="font-weight:800;font-size:1.05rem;margin-bottom:8px">Off-SFDC readiness</p>
+          <p class="mini">A future audience and activation layer not dependent on SFDC-centric processes.</p>
+        </div>
+        <div class="card reveal" style="padding:22px 24px">
+          <div class="card-glow-bar"></div>
+          <div class="big-num gradient-text" style="margin-bottom:12px">2</div>
+          <p style="font-weight:800;font-size:1.05rem;margin-bottom:8px">Better T&amp;E targeting</p>
+          <p class="mini">Customer, account, pipeline, and engagement signals combined into precise T&amp;E audiences.</p>
+        </div>
+        <div class="card reveal" style="padding:22px 24px">
+          <div class="card-glow-bar"></div>
+          <div class="big-num gradient-text" style="margin-bottom:12px">3</div>
+          <p style="font-weight:800;font-size:1.05rem;margin-bottom:8px">North Star alignment</p>
+          <p class="mini">Fits the move toward harmonized buying-group and customer-data architecture across SAP.</p>
+        </div>
+      </div>
+      <div class="card reveal animated-border" style="padding:24px 28px">
+        <p style="font-weight:800;font-size:1.1rem;margin-bottom:8px">In plain English</p>
+        <p class="mini" style="font-size:.9rem;line-height:1.6">CDP can take Concur's target account logic, buyer-role logic, and campaign eligibility rules, then activate them consistently into Marketo — without rebuilding everything in each tool separately.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ SLIDE 8: Roadmap ═══ -->
+  <section class="slide" data-slide="8">
+    <div class="orb" style="width:400px;height:400px;bottom:-90px;right:-60px;background:var(--teal);opacity:.07"></div>
+    <div class="content">
+      <h2 style="font-size:clamp(2rem,4.5vw,3.4rem);margin-bottom:6px" class="reveal">Updated roadmap</h2>
+      <p class="muted mini reveal" style="margin-bottom:16px">Now updated with the October Concur CDP proof-of-concept path.</p>
+      <div class="reveal" style="margin-bottom:16px">
+        <svg viewBox="0 0 900 30" class="arch-svg" style="max-height:30px" xmlns="http://www.w3.org/2000/svg">
+          <line x1="50" y1="15" x2="850" y2="15" stroke="rgba(255,255,255,0.06)" stroke-width="2"/>
+          <circle cx="50" cy="15" r="9" fill="#00cfb4" filter="url(#glow)"/>
+          <circle cx="250" cy="15" r="9" fill="#00cfb4"/>
+          <circle cx="450" cy="15" r="9" fill="#00cfb4"/>
+          <circle cx="650" cy="15" r="9" fill="#fbbf24"/>
+          <circle cx="848" cy="15" r="9" fill="#4f8eff"/>
+          <text x="50" y="8" text-anchor="middle" font-family="Manrope" font-size="8.5" font-weight="700" fill="#00cfb4">LEARN</text>
+          <text x="250" y="8" text-anchor="middle" font-family="Manrope" font-size="8.5" font-weight="700" fill="#00cfb4">DEFINE</text>
+          <text x="450" y="8" text-anchor="middle" font-family="Manrope" font-size="8.5" font-weight="700" fill="#00cfb4">TEST</text>
+          <text x="650" y="8" text-anchor="middle" font-family="Manrope" font-size="8.5" font-weight="700" fill="#fbbf24">31 OCT</text>
+          <text x="848" y="8" text-anchor="middle" font-family="Manrope" font-size="8.5" font-weight="700" fill="#4f8eff">SCALE</text>
+        </svg>
+      </div>
+      <div class="g5">
+        <div class="card reveal" style="padding:14px 16px"><span class="pill pill-teal" style="margin-bottom:8px;display:inline-block;font-size:.65rem">Learn</span><p style="font-weight:800;font-size:.9rem;margin-bottom:5px">Understand the pattern</p><p class="mini" style="font-size:.8rem">Source → unify → indicators → activate.</p></div>
+        <div class="card reveal" style="padding:14px 16px"><span class="pill pill-teal" style="margin-bottom:8px;display:inline-block;font-size:.65rem">Define</span><p style="font-weight:800;font-size:.9rem;margin-bottom:5px">Pick 2–3 use cases</p><p class="mini" style="font-size:.8rem">Prioritize T&amp;E scenarios, choose one sandbox POC.</p></div>
+        <div class="card reveal" style="padding:14px 16px"><span class="pill pill-teal" style="margin-bottom:8px;display:inline-block;font-size:.65rem">Test</span><p style="font-weight:800;font-size:.9rem;margin-bottom:5px">CDP → Marketo first</p><p class="mini" style="font-size:.8rem">Lower risk, directly tied to execution in sandbox.</p></div>
+        <div class="card reveal" style="padding:14px 16px;border-color:rgba(251,191,36,.2)"><span class="pill pill-amber" style="margin-bottom:8px;display:inline-block;font-size:.65rem">31 Oct</span><p style="font-weight:800;font-size:.9rem;margin-bottom:5px">Submit PI deps</p><p class="mini" style="font-size:.8rem">Dev, BTP, access, config, Nitin-team requirements.</p></div>
+        <div class="card reveal" style="padding:14px 16px;border-color:rgba(79,142,255,.2)"><span class="pill pill-blue" style="margin-bottom:8px;display:inline-block;font-size:.65rem">Scale</span><p style="font-weight:800;font-size:.9rem;margin-bottom:5px">Build &amp; expand</p><p class="mini" style="font-size:.8rem">Validate pilot, add more use cases, buying-group logic.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ SLIDE 9: Kickoff Decisions ═══ -->
+  <section class="slide" data-slide="9">
+    <div class="orb" style="width:460px;height:460px;top:-120px;right:-80px;background:var(--blue);opacity:.07"></div>
+    <div class="orb" style="width:280px;height:280px;bottom:-60px;left:-50px;background:var(--amber);opacity:.06;animation-delay:-10s"></div>
+    <div class="content">
+      <h2 style="font-size:clamp(2rem,4.5vw,3.4rem);margin-bottom:6px" class="reveal">Kickoff decisions</h2>
+      <p class="muted mini reveal" style="margin-bottom:18px">The practical project layer agreed in the October kickoff call.</p>
+      <div class="g2" style="margin-bottom:14px">
+        <div class="card reveal" style="padding:22px 24px">
+          <div class="card-glow-bar"></div>
+          <span class="pill pill-teal" style="margin-bottom:10px;display:inline-block">Operating model</span>
+          <p style="font-size:1.3rem;font-weight:800;margin-bottom:8px">Crawl, walk, run</p>
+          <p class="mini">Start with one narrow but meaningful Concur use case. Prove value first, then expand.</p>
+        </div>
+        <div class="card reveal" style="padding:22px 24px">
+          <div class="card-glow-bar"></div>
+          <span class="pill pill-blue" style="margin-bottom:10px;display:inline-block">Activation strategy</span>
+          <p style="font-size:1.3rem;font-weight:800;margin-bottom:8px">Marketo first</p>
+          <p class="mini">CDP to Marketo in sandbox — lower risk, directly tied to marketing execution.</p>
+        </div>
+        <div class="card reveal" style="padding:22px 24px">
+          <div class="card-glow-bar"></div>
+          <span class="pill pill-teal" style="margin-bottom:10px;display:inline-block">Cadence</span>
+          <p style="font-size:1.3rem;font-weight:800;margin-bottom:8px">Bi-weekly minimum</p>
+          <p class="mini">Two-week sprint cadence, tighter check-ins early in the POC if needed.</p>
+        </div>
+        <div class="card reveal" style="padding:22px 24px">
+          <div class="card-glow-bar"></div>
+          <span class="pill pill-amber" style="margin-bottom:10px;display:inline-block">Scope guardrail</span>
+          <p style="font-size:1.3rem;font-weight:800;margin-bottom:8px">Don't block on SFDC transition</p>
+          <p class="mini">The wider Sales Cloud discussion must not delay the immediate Concur CDP POC.</p>
+        </div>
+      </div>
+      <div class="gate-card reveal">
+        <p style="font-weight:800;color:var(--red);margin-bottom:6px">🔴 Critical gate: 31 October</p>
+        <p class="mini">All work requiring Dev, BTP, access provisioning, technical config, or Nitin-team support must be submitted as formal PI requirements <strong style="color:var(--text)">before November PI Planning</strong>.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ SLIDE 10: Closing ═══ -->
+  <section class="slide" data-slide="10">
+    <div class="orb" style="width:500px;height:500px;top:-150px;right:-100px;background:var(--blue);opacity:.08"></div>
+    <div class="orb" style="width:400px;height:400px;bottom:-120px;left:-80px;background:var(--teal);opacity:.07;animation-delay:-8s"></div>
+    <div class="orb" style="width:260px;height:260px;top:45%;left:15%;background:var(--amber);opacity:.05;animation-delay:-15s"></div>
+    <div class="content" style="text-align:center">
+      <div style="font-size:76px;line-height:1;margin-bottom:18px" class="reveal">🗺️</div>
+      <h2 style="font-size:clamp(2.4rem,5.5vw,4.6rem);margin-bottom:20px;line-height:1.05" class="reveal gradient-text">One-line mental model</h2>
+      <div class="reveal" style="margin-bottom:22px">
+        <svg viewBox="0 0 740 52" class="arch-svg" style="max-width:700px;max-height:52px;margin:0 auto" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="ca" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="rgba(226,234,245,0.3)"/></marker></defs>
+          <rect x="4" y="8" width="168" height="36" rx="10" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.08)" stroke-width="1.5"/>
+          <text x="88" y="30" text-anchor="middle" font-family="Manrope" font-size="12" font-weight="700" fill="rgba(226,234,245,0.7)">Marketo / Salesforce</text>
+          <line x1="174" y1="26" x2="210" y2="26" stroke="rgba(226,234,245,0.2)" stroke-width="1.5" marker-end="url(#ca)"/>
+          <rect x="212" y="4" width="154" height="44" rx="16" fill="rgba(0,207,180,0.12)" stroke="rgba(0,207,180,0.4)" stroke-width="1.5"/>
+          <text x="289" y="23" text-anchor="middle" font-family="Manrope" font-size="11" font-weight="800" fill="#00cfb4">SAP CDP</text>
+          <text x="289" y="39" text-anchor="middle" font-family="DM Serif Display,serif" font-size="12" font-style="italic" fill="rgba(0,207,180,0.6)">audience + identity layer</text>
+          <line x1="368" y1="26" x2="404" y2="26" stroke="rgba(226,234,245,0.2)" stroke-width="1.5" marker-end="url(#ca)"/>
+          <rect x="406" y="8" width="146" height="36" rx="10" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.08)" stroke-width="1.5"/>
+          <text x="479" y="30" text-anchor="middle" font-family="Manrope" font-size="12" font-weight="700" fill="rgba(226,234,245,0.7)">Demandbase+</text>
+          <line x1="554" y1="26" x2="590" y2="26" stroke="rgba(226,234,245,0.2)" stroke-width="1.5" marker-end="url(#ca)"/>
+          <rect x="592" y="8" width="140" height="36" rx="10" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.08)" stroke-width="1.5"/>
+          <text x="662" y="30" text-anchor="middle" font-family="Manrope" font-size="12" font-weight="700" fill="rgba(226,234,245,0.7)">Concur audiences</text>
+        </svg>
+      </div>
+      <p style="font-size:clamp(.95rem,1.8vw,1.25rem);max-width:820px;margin:0 auto 28px;line-height:1.65" class="muted reveal">CDP is not replacing your stack — it is the audience and identity layer that connects it. Immediate next action: define 2–3 Concur use cases, select one sandbox pilot, and submit PI dependencies by <strong style="color:var(--text)">31 October</strong>.</p>
+      <div style="display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap" class="reveal">
+        <span class="pill pill-teal">← → to navigate</span>
+        <span class="pill pill-red">PI gate: 31 October</span>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- Navigation -->
+<nav class="nav">
+  <button class="nav-btn" onclick="changeSlide(-1)">&#8249;</button>
+  <div class="dots" id="dots"></div>
+  <button class="nav-btn" onclick="changeSlide(1)">&#8250;</button>
+  <span class="slide-num" id="counter">1 / 10</span>
+</nav>
+<div class="hint">← → navigate</div>
+
+<script>
+// ── Cursor ──
+const dot = document.getElementById('cur-dot');
+const ring = document.getElementById('cur-ring');
+let mx = -100, my = -100, rx = -100, ry = -100;
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  dot.style.left = mx + 'px'; dot.style.top = my + 'px';
+});
+(function animRing() {
+  rx += (mx - rx) * 0.11; ry += (my - ry) * 0.11;
+  ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+  requestAnimationFrame(animRing);
+})();
+
+// ── Canvas particles ──
+const canvas = document.getElementById('bg-canvas');
+const ctx = canvas.getContext('2d');
+function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+resize(); window.addEventListener('resize', resize);
+const N = 70;
+const pts = Array.from({length: N}, () => ({
+  x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+  vx: (Math.random() - .5) * .25, vy: (Math.random() - .5) * .25
+}));
+(function drawPts() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  pts.forEach(p => {
+    p.x += p.vx + (mx - p.x) * 0.00008;
+    p.y += p.vy + (my - p.y) * 0.00008;
+    if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+    if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+    ctx.beginPath(); ctx.arc(p.x, p.y, 1.2, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(0,207,180,0.35)'; ctx.fill();
+  });
+  for (let i = 0; i < N; i++) for (let j = i + 1; j < N; j++) {
+    const dx = pts[i].x - pts[j].x, dy = pts[i].y - pts[j].y;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    if (dist < 130) {
+      ctx.beginPath(); ctx.moveTo(pts[i].x, pts[i].y); ctx.lineTo(pts[j].x, pts[j].y);
+      ctx.strokeStyle = `rgba(0,207,180,${0.12 * (1 - dist / 130)})`;
+      ctx.lineWidth = .6; ctx.stroke();
+    }
+  }
+  requestAnimationFrame(drawPts);
+})();
+
+// ── Slides ──
+let current = 1;
+const total = document.querySelectorAll('.slide').length;
+const dotsEl = document.getElementById('dots');
+const counterEl = document.getElementById('counter');
+const progressEl = document.getElementById('progress');
+for (let i = 1; i <= total; i++) {
+  const d = document.createElement('div'); d.className = 'dot' + (i === 1 ? ' active' : '');
+  d.onclick = () => goTo(i); dotsEl.appendChild(d);
+}
+function goTo(n) {
+  document.querySelector('.slide.active')?.classList.remove('active');
+  const s = document.querySelector(`.slide[data-slide="${n}"]`);
+  if (s) { s.classList.add('active'); anim(s); }
+  current = n; updateNav();
+  setTimeout(initTilt, 100);
+}
+function changeSlide(d) { let n = current + d; if (n < 1) n = total; if (n > total) n = 1; goTo(n); }
+function updateNav() {
+  document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i + 1 === current));
+  counterEl.textContent = current + ' / ' + total;
+  progressEl.style.width = (current / total * 100) + '%';
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); changeSlide(1); }
+  if (e.key === 'ArrowLeft') { e.preventDefault(); changeSlide(-1); }
+});
+let tx = 0;
+document.addEventListener('touchstart', e => { tx = e.touches[0].clientX; });
+document.addEventListener('touchend', e => { const d = tx - e.changedTouches[0].clientX; if (Math.abs(d) > 50) changeSlide(d > 0 ? 1 : -1); });
+
+// ── Reveal animation ──
+function anim(slide) {
+  slide.querySelectorAll('.reveal').forEach((el, i) => {
+    el.style.transition = 'none'; el.style.opacity = '0';
+    el.style.transform = 'translateY(28px)'; el.style.filter = 'blur(5px)'; el.offsetHeight;
+    const delay = i * 0.07;
+    el.style.transition = `opacity .4s ease ${delay}s, transform .4s ease ${delay}s, filter .4s ease ${delay}s`;
+    el.style.opacity = '1'; el.style.transform = 'translateY(0)'; el.style.filter = 'blur(0)';
+  });
+}
+
+// ── 3D Card Tilt ──
+function initTilt() {
+  document.querySelectorAll('.card').forEach(card => {
+    card.addEventListener('mousemove', e => {
+      const r = card.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width - .5;
+      const y = (e.clientY - r.top) / r.height - .5;
+      card.style.transition = 'border-color .3s, box-shadow .3s';
+      card.style.transform = `perspective(900px) rotateY(${x * 12}deg) rotateX(${-y * 12}deg) scale(1.02)`;
+    });
+    card.addEventListener('mouseleave', () => {
+      card.style.transition = 'transform .4s ease, border-color .3s, box-shadow .3s';
+      card.style.transform = 'perspective(900px) rotateY(0) rotateX(0) scale(1)';
+    });
+  });
+}
+
+// ── Mouse parallax on orbs ──
+document.addEventListener('mousemove', e => {
+  const cx = e.clientX / window.innerWidth - .5;
+  const cy = e.clientY / window.innerHeight - .5;
+  document.querySelectorAll('.slide.active .orb').forEach((orb, i) => {
+    const f = (i + 1) * 12;
+    orb.style.transform = `translate(${cx * f}px, ${cy * f}px)`;
+  });
+});
+
+// ── Init ──
+updateNav();
+anim(document.querySelector('.slide.active'));
+initTilt();
+</script>
+</body>
+</html>
