@@ -126,10 +126,10 @@
     /* ── Logo strip ── */
     .logo-strip { max-width: 520px; margin: 40px auto 0; padding: 0 24px; text-align: center; }
     .logo-strip-label { font-size: .72rem; font-weight: 700; color: #94a3b8; letter-spacing: .07em; text-transform: uppercase; margin-bottom: 22px; }
-    .logos { display: flex; align-items: center; justify-content: center; gap: 32px; flex-wrap: wrap; }
+    .logos { display: flex; align-items: center; justify-content: center; gap: 28px; flex-wrap: wrap; }
     .logo-item { display: flex; flex-direction: column; align-items: center; gap: 7px; }
-    .logo-item img { width: 40px; height: 40px; object-fit: contain; filter: grayscale(15%); opacity: .8; transition: opacity .2s, filter .2s; }
-    .logo-item img:hover { opacity: 1; filter: grayscale(0%); }
+    .logo-item svg { transition: transform .2s, filter .2s; filter: drop-shadow(0 2px 6px rgba(0,0,0,.1)); }
+    .logo-item:hover svg { transform: translateY(-3px); filter: drop-shadow(0 6px 14px rgba(0,0,0,.18)); }
     .logo-item span { font-size: .68rem; font-weight: 600; color: #94a3b8; white-space: nowrap; }
 
     /* ── Footer ── */
@@ -169,26 +169,51 @@
   <div class="logo-strip">
     <p class="logo-strip-label">Technologies in this deck</p>
     <div class="logos">
+
       <div class="logo-item">
-        <img src="https://logo.clearbit.com/sap.com" alt="SAP CDP" onerror="this.style.display='none'">
+        <svg width="48" height="48" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+          <rect width="48" height="48" rx="12" fill="#0070F2"/>
+          <text x="24" y="25" text-anchor="middle" font-family="Arial Black,sans-serif" font-weight="900" font-size="13" fill="white">SAP</text>
+          <text x="24" y="37" text-anchor="middle" font-family="Arial,sans-serif" font-weight="700" font-size="8.5" fill="rgba(255,255,255,.78)" letter-spacing="1">CDP</text>
+        </svg>
         <span>SAP CDP</span>
       </div>
+
       <div class="logo-item">
-        <img src="https://logo.clearbit.com/salesforce.com" alt="Salesforce" onerror="this.style.display='none'">
+        <svg width="48" height="48" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+          <rect width="48" height="48" rx="12" fill="#00A1E0"/>
+          <path fill="white" d="M35,20c-0.2-4.2-3.6-7.5-7.8-7.5c-2,0-3.9,0.8-5.2,2C21,13.2,19.1,12.5,17,12.5c-4.1,0-7.5,3.4-7.5,7.5c0,0.1,0,0.2,0,0.4C7.7,21.2,6,23.4,6,26c0,3.3,2.7,6,6,6h22c3.3,0,6-2.7,6-6C40,23.3,37.9,20.6,35,20z"/>
+        </svg>
         <span>Salesforce</span>
       </div>
+
       <div class="logo-item">
-        <img src="https://logo.clearbit.com/marketo.com" alt="Marketo" onerror="this.style.display='none'">
+        <svg width="48" height="48" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+          <rect width="48" height="48" rx="12" fill="#6655D2"/>
+          <rect x="9"  y="29" width="7" height="11" rx="2" fill="white"/>
+          <rect x="20" y="21" width="7" height="19" rx="2" fill="white"/>
+          <rect x="31" y="13" width="7" height="27" rx="2" fill="white" opacity=".9"/>
+        </svg>
         <span>Marketo</span>
       </div>
+
       <div class="logo-item">
-        <img src="https://logo.clearbit.com/demandbase.com" alt="Demandbase" onerror="this.style.display='none'">
+        <svg width="48" height="48" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+          <rect width="48" height="48" rx="12" fill="#1B2C6B"/>
+          <text x="24" y="31" text-anchor="middle" font-family="Arial Black,sans-serif" font-weight="900" font-size="20" fill="white">D</text>
+        </svg>
         <span>Demandbase</span>
       </div>
+
       <div class="logo-item">
-        <img src="https://logo.clearbit.com/concur.com" alt="SAP Concur" onerror="this.style.display='none'">
+        <svg width="48" height="48" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+          <rect width="48" height="48" rx="12" fill="#0072AA"/>
+          <text x="24" y="25" text-anchor="middle" font-family="Arial Black,sans-serif" font-weight="900" font-size="11" fill="white">SAP</text>
+          <text x="24" y="37" text-anchor="middle" font-family="Arial,sans-serif" font-weight="700" font-size="7.5" fill="rgba(255,255,255,.78)" letter-spacing="0.5">CONCUR</text>
+        </svg>
         <span>SAP Concur</span>
       </div>
+
     </div>
   </div>
 
