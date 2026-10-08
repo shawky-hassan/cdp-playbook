@@ -22,46 +22,72 @@
     }
   </style>
   <style>
-    :root{--color-bg:#f7fafc;--color-text:#102033}
-    *,*::before,*::after{box-sizing:border-box}
-    html,body{background:var(--color-bg);margin:0}
-    body{font-family:'Manrope',sans-serif;color:var(--color-text);overflow:hidden;height:100vh;width:100vw}
-    .deck{width:100vw;height:100vh;position:relative}
-    .slide{position:absolute;top:0;left:0;width:100%;height:100%;background:var(--color-bg);display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;transform:scale(.97);transition:opacity .55s ease,transform .55s ease;pointer-events:none;overflow:hidden}
-    .slide.active{opacity:1;transform:scale(1);pointer-events:all}
-    .slide>.content{position:relative;z-index:2;width:100%;max-width:1180px;padding:clamp(1.2rem,3.5vw,2.8rem)}
-    .nav-controls{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:16px;z-index:100;background:rgba(255,255,255,.84);backdrop-filter:blur(10px);padding:10px 20px;border-radius:999px;border:1px solid rgba(15,23,42,.08);box-shadow:0 4px 24px rgba(15,23,42,.08)}
-    .nav-btn{width:40px;height:40px;border:none;background:#fff;color:#0f766e;border-radius:999px;font-size:1.2rem;cursor:pointer;transition:background .15s}
-    .nav-btn:hover{background:#eaf6f4}
-    .slide-dots{display:flex;gap:6px}
-    .dot{width:8px;height:8px;border-radius:50%;background:rgba(15,23,42,.15);cursor:pointer;transition:all .2s}
-    .dot.active{background:#0f766e;width:22px;border-radius:4px}
-    .slide-counter{font-size:.8rem;color:#64748b;min-width:42px;text-align:center;font-weight:600}
-    .hint{position:fixed;bottom:22px;right:28px;font-size:.72rem;color:#94a3b8;z-index:100}
-    .reveal{opacity:0;transform:translateY(20px)}
-    .gradient-mesh{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none}
-    .blob{position:absolute;border-radius:50%;filter:blur(70px);animation:float 16s ease-in-out infinite}
-    @keyframes float{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(24px,-20px) scale(1.06)}}
-    .slide::before{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse at center,transparent 55%,rgba(15,23,42,.06) 100%)}
-    .card{background:rgba(255,255,255,.86);border:1px solid rgba(15,23,42,.08);border-radius:24px;box-shadow:0 10px 30px rgba(15,23,42,.06)}
-    .mini{font-size:.87rem;color:#64748b;line-height:1.5}
-    .pill{display:inline-block;padding:5px 11px;border-radius:999px;font-size:.76rem;font-weight:700;background:rgba(15,118,110,.1);color:#0f766e;letter-spacing:.02em}
-    .pill-blue{background:rgba(37,99,235,.1);color:#2563eb}
-    .pill-amber{background:rgba(245,158,11,.12);color:#b45309}
-    .pill-red{background:rgba(239,68,68,.1);color:#dc2626}
-    .tableish{display:grid;grid-template-columns:1.2fr 1.4fr 1.4fr 1.4fr;gap:10px}
-    .cell{padding:14px 16px;border-radius:16px;background:#fff;border:1px solid rgba(15,23,42,.08);font-size:.88rem}
-    .head{background:#eaf6f4;font-weight:800;font-size:.82rem;color:#0f766e;letter-spacing:.04em;text-transform:uppercase}
-    .timeline{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
-    .timeline .item{padding:20px;border-radius:22px;background:#fff;border:1px solid rgba(15,23,42,.08);position:relative}
-    .timeline .item::before{content:'';position:absolute;top:-9px;left:22px;width:14px;height:14px;border-radius:50%;background:#0f766e;box-shadow:0 0 0 5px rgba(15,118,110,.14)}
-    .big{font-size:clamp(2rem,4vw,3.4rem);font-weight:800;line-height:1;color:#0f766e}
-    .subtle-list li{margin:0 0 10px 0}
-    .arch-svg{width:100%;height:auto;display:block}
-    .progress-bar{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,#0f766e,#2563eb);z-index:200;transition:width .4s ease}
+    :root { --color-bg: #f7fafc; --color-text: #102033; }
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { background: var(--color-bg); margin: 0; }
+    body { font-family: 'Manrope', sans-serif; color: var(--color-text); overflow: hidden; height: 100vh; width: 100vw; cursor: none; }
+
+    /* ── Custom cursor ── */
+    #cur-dot { position: fixed; width: 7px; height: 7px; background: #0f766e; border-radius: 50%; pointer-events: none; z-index: 9999; transform: translate(-50%,-50%); }
+    #cur-ring { position: fixed; width: 30px; height: 30px; border: 1.5px solid rgba(15,118,110,.36); border-radius: 50%; pointer-events: none; z-index: 9998; transform: translate(-50%,-50%); }
+
+    /* ── Particle canvas ── */
+    #particle-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+
+    .deck { width: 100vw; height: 100vh; position: relative; z-index: 1; }
+
+    /* ── Slides — blur transition ── */
+    .slide {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: var(--color-bg);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      opacity: 0; transform: scale(.97); filter: blur(5px);
+      transition: opacity .52s ease, transform .52s ease, filter .52s ease;
+      pointer-events: none; overflow: hidden;
+    }
+    .slide.active { opacity: 1; transform: scale(1); filter: blur(0); pointer-events: all; }
+    .slide > .content { position: relative; z-index: 2; width: 100%; max-width: 1180px; padding: clamp(1.2rem,3.5vw,2.8rem); }
+
+    /* ── Nav ── */
+    .nav-controls { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 16px; z-index: 100; background: rgba(255,255,255,.88); backdrop-filter: blur(12px); padding: 10px 20px; border-radius: 999px; border: 1px solid rgba(15,23,42,.08); box-shadow: 0 4px 24px rgba(15,23,42,.08); }
+    .nav-btn { width: 40px; height: 40px; border: none; background: #fff; color: #0f766e; border-radius: 999px; font-size: 1.2rem; cursor: none; transition: background .15s, transform .15s; }
+    .nav-btn:hover { background: #eaf6f4; transform: scale(1.1); }
+    .slide-dots { display: flex; gap: 6px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(15,23,42,.15); cursor: none; transition: all .25s; }
+    .dot.active { background: #0f766e; width: 22px; border-radius: 4px; }
+    .slide-counter { font-size: .8rem; color: #64748b; min-width: 42px; text-align: center; font-weight: 600; }
+    .hint { position: fixed; bottom: 22px; right: 28px; font-size: .72rem; color: #94a3b8; z-index: 100; }
+
+    .reveal { opacity: 0; transform: translateY(22px); }
+    .gradient-mesh { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+    .blob { position: absolute; border-radius: 50%; filter: blur(70px); will-change: transform; }
+    .slide::before { content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: radial-gradient(ellipse at center, transparent 55%, rgba(15,23,42,.04) 100%); }
+
+    /* ── Cards — tilt via JS ── */
+    .card { background: rgba(255,255,255,.9); border: 1px solid rgba(15,23,42,.08); border-radius: 24px; box-shadow: 0 10px 30px rgba(15,23,42,.06); cursor: none; will-change: transform; }
+    .card:hover { box-shadow: 0 18px 46px rgba(15,23,42,.11); border-color: rgba(15,118,110,.2); }
+
+    .mini { font-size: .87rem; color: #64748b; line-height: 1.5; }
+    .pill { display: inline-block; padding: 5px 11px; border-radius: 999px; font-size: .76rem; font-weight: 700; background: rgba(15,118,110,.1); color: #0f766e; letter-spacing: .02em; }
+    .pill-blue { background: rgba(37,99,235,.1); color: #2563eb; }
+    .pill-amber { background: rgba(245,158,11,.12); color: #b45309; }
+    .pill-red { background: rgba(239,68,68,.1); color: #dc2626; }
+    .tableish { display: grid; grid-template-columns: 1.2fr 1.4fr 1.4fr 1.4fr; gap: 10px; }
+    .cell { padding: 14px 16px; border-radius: 16px; background: #fff; border: 1px solid rgba(15,23,42,.08); font-size: .88rem; }
+    .head { background: #eaf6f4; font-weight: 800; font-size: .82rem; color: #0f766e; letter-spacing: .04em; text-transform: uppercase; }
+    .timeline { display: grid; grid-template-columns: repeat(4,1fr); gap: 18px; }
+    .timeline .item { padding: 20px; border-radius: 22px; background: #fff; border: 1px solid rgba(15,23,42,.08); position: relative; cursor: none; will-change: transform; }
+    .timeline .item::before { content: ''; position: absolute; top: -9px; left: 22px; width: 14px; height: 14px; border-radius: 50%; background: #0f766e; box-shadow: 0 0 0 5px rgba(15,118,110,.14); }
+    .big { font-size: clamp(2rem,4vw,3.4rem); font-weight: 800; line-height: 1; color: #0f766e; }
+    .subtle-list li { margin: 0 0 10px 0; }
+    .arch-svg { width: 100%; height: auto; display: block; }
+    .progress-bar { position: fixed; top: 0; left: 0; height: 3px; background: linear-gradient(90deg,#0f766e,#2563eb); z-index: 200; transition: width .4s ease; }
   </style>
 </head>
 <body>
+<canvas id="particle-canvas"></canvas>
+<div id="cur-dot"></div>
+<div id="cur-ring"></div>
 <div class="progress-bar" id="progress"></div>
 <div class="deck">
 
@@ -146,7 +172,7 @@
     </div>
   </section>
 
-  <!-- Slide 3: Core flow -->
+  <!-- Slide 3: Core flow — fixed: last connector arrow now teal to match ACTIVATE box -->
   <section class="slide" data-slide="3">
     <div class="gradient-mesh">
       <div class="blob" style="width:340px;height:340px;top:0;right:-90px;background:#2563eb;opacity:.08"></div>
@@ -156,7 +182,10 @@
       <p class="text-base text-text-secondary mb-6 reveal">Collect → unify → segment → activate.</p>
       <div class="reveal mb-6">
         <svg viewBox="0 0 900 140" class="arch-svg" style="max-height:140px" xmlns="http://www.w3.org/2000/svg">
-          <defs><marker id="fa" markerWidth="10" markerHeight="8" refX="8" refY="4" orient="auto"><path d="M0,0 L0,8 L10,4 z" fill="#2563eb"/></marker></defs>
+          <defs>
+            <marker id="fa" markerWidth="10" markerHeight="8" refX="8" refY="4" orient="auto"><path d="M0,0 L0,8 L10,4 z" fill="#2563eb"/></marker>
+            <marker id="fa-g" markerWidth="10" markerHeight="8" refX="8" refY="4" orient="auto"><path d="M0,0 L0,8 L10,4 z" fill="#0f766e"/></marker>
+          </defs>
           <rect x="8" y="10" width="168" height="120" rx="18" fill="white" stroke="rgba(15,23,42,0.09)" stroke-width="1.5"/>
           <rect x="20" y="18" width="72" height="22" rx="11" fill="rgba(15,118,110,0.1)"/><text x="56" y="33" text-anchor="middle" font-family="Manrope" font-size="10" font-weight="700" fill="#0f766e">1. INGEST</text>
           <text x="92" y="62" text-anchor="middle" font-family="Manrope" font-size="13.5" font-weight="800" fill="#102033">Source</text><text x="92" y="79" text-anchor="middle" font-family="Manrope" font-size="13.5" font-weight="800" fill="#102033">Systems</text>
@@ -171,7 +200,8 @@
           <rect x="444" y="18" width="100" height="22" rx="11" fill="rgba(15,118,110,0.1)"/><text x="494" y="33" text-anchor="middle" font-family="Manrope" font-size="10" font-weight="700" fill="#0f766e">3. SEGMENT</text>
           <text x="516" y="62" text-anchor="middle" font-family="Manrope" font-size="13.5" font-weight="800" fill="#102033">Indicators</text><text x="516" y="79" text-anchor="middle" font-family="Manrope" font-size="13.5" font-weight="800" fill="#102033">&amp; Segments</text>
           <text x="516" y="103" text-anchor="middle" font-family="Manrope" font-size="10.5" fill="#64748b">KPIs, scoring,</text><text x="516" y="118" text-anchor="middle" font-family="Manrope" font-size="10.5" fill="#64748b">audience logic</text>
-          <line x1="602" y1="70" x2="642" y2="70" stroke="#2563eb" stroke-width="2.5" marker-end="url(#fa)"/>
+          <!-- Fixed: last connector is teal to match the green ACTIVATE box -->
+          <line x1="602" y1="70" x2="642" y2="70" stroke="#0f766e" stroke-width="2.5" marker-end="url(#fa-g)"/>
           <rect x="644" y="10" width="248" height="120" rx="18" fill="#0f766e"/>
           <rect x="656" y="18" width="80" height="22" rx="11" fill="rgba(255,255,255,0.2)"/><text x="696" y="33" text-anchor="middle" font-family="Manrope" font-size="10" font-weight="700" fill="rgba(255,255,255,0.9)">4. ACTIVATE</text>
           <text x="768" y="63" text-anchor="middle" font-family="Manrope" font-size="13.5" font-weight="800" fill="#fff">Audiences</text><text x="768" y="80" text-anchor="middle" font-family="Manrope" font-size="13.5" font-weight="800" fill="#fff">&amp; CX Flows</text>
@@ -285,22 +315,25 @@
     </div>
   </section>
 
-  <!-- Slide 8: Roadmap -->
+  <!-- Slide 8: Roadmap — fixed: "31 OCT" → "31 Oct", taller SVG for readability -->
   <section class="slide" data-slide="8">
     <div class="gradient-mesh"><div class="blob" style="width:330px;height:330px;bottom:-80px;right:-40px;background:#0f766e;opacity:.1"></div></div>
     <div class="content">
       <h2 class="font-display text-5xl mb-3 reveal">Updated roadmap</h2>
       <p class="text-base text-text-secondary mb-4 reveal">Now updated with the October Concur CDP proof-of-concept path.</p>
       <div class="reveal mb-4">
-        <svg viewBox="0 0 900 34" class="arch-svg" style="max-height:34px" xmlns="http://www.w3.org/2000/svg">
-          <line x1="50" y1="17" x2="850" y2="17" stroke="#e2e8f0" stroke-width="3"/>
-          <circle cx="50" cy="17" r="10" fill="#0f766e"/><circle cx="250" cy="17" r="10" fill="#0f766e"/><circle cx="450" cy="17" r="10" fill="#0f766e"/>
-          <circle cx="650" cy="17" r="10" fill="#f59e0b"/><circle cx="848" cy="17" r="10" fill="#2563eb"/>
-          <text x="50" y="10" text-anchor="middle" font-family="Manrope" font-size="9" font-weight="700" fill="#0f766e">LEARN</text>
-          <text x="250" y="10" text-anchor="middle" font-family="Manrope" font-size="9" font-weight="700" fill="#0f766e">DEFINE</text>
-          <text x="450" y="10" text-anchor="middle" font-family="Manrope" font-size="9" font-weight="700" fill="#0f766e">TEST</text>
-          <text x="650" y="10" text-anchor="middle" font-family="Manrope" font-size="9" font-weight="700" fill="#f59e0b">31 OCT</text>
-          <text x="848" y="10" text-anchor="middle" font-family="Manrope" font-size="9" font-weight="700" fill="#2563eb">SCALE</text>
+        <svg viewBox="0 0 900 44" class="arch-svg" style="max-height:44px" xmlns="http://www.w3.org/2000/svg">
+          <line x1="50" y1="32" x2="850" y2="32" stroke="#e2e8f0" stroke-width="3"/>
+          <circle cx="50" cy="32" r="10" fill="#0f766e"/>
+          <circle cx="250" cy="32" r="10" fill="#0f766e"/>
+          <circle cx="450" cy="32" r="10" fill="#0f766e"/>
+          <circle cx="650" cy="32" r="11" fill="#f59e0b"/>
+          <circle cx="848" cy="32" r="10" fill="#2563eb"/>
+          <text x="50" y="16" text-anchor="middle" font-family="Manrope" font-size="10" font-weight="700" fill="#0f766e">LEARN</text>
+          <text x="250" y="16" text-anchor="middle" font-family="Manrope" font-size="10" font-weight="700" fill="#0f766e">DEFINE</text>
+          <text x="450" y="16" text-anchor="middle" font-family="Manrope" font-size="10" font-weight="700" fill="#0f766e">TEST</text>
+          <text x="650" y="16" text-anchor="middle" font-family="Manrope" font-size="10" font-weight="700" fill="#f59e0b">31 Oct</text>
+          <text x="848" y="16" text-anchor="middle" font-family="Manrope" font-size="10" font-weight="700" fill="#2563eb">SCALE</text>
         </svg>
       </div>
       <div class="grid grid-cols-5 gap-4">
@@ -377,44 +410,152 @@
 <div class="hint">← → to navigate</div>
 
 <script>
+// === Navigation ===
 let current = 1;
 const total = document.querySelectorAll('.slide').length;
-const dotsContainer = document.getElementById('dots');
-const counter = document.getElementById('counter');
-const progress = document.getElementById('progress');
+const dotsEl = document.getElementById('dots');
+const counterEl = document.getElementById('counter');
+const progressEl = document.getElementById('progress');
+
 for (let i = 1; i <= total; i++) {
-  const dot = document.createElement('div');
-  dot.className = 'dot' + (i === 1 ? ' active' : '');
-  dot.onclick = () => goToSlide(i);
-  dotsContainer.appendChild(dot);
+  const d = document.createElement('div');
+  d.className = 'dot' + (i === 1 ? ' active' : '');
+  d.onclick = () => goToSlide(i);
+  dotsEl.appendChild(d);
 }
+
 function goToSlide(n) {
   document.querySelector('.slide.active')?.classList.remove('active');
-  const next = document.querySelector(`.slide[data-slide="${n}"]`);
-  if (next) { next.classList.add('active'); animateSlide(next); }
-  current = n; updateNav();
+  const s = document.querySelector(`.slide[data-slide="${n}"]`);
+  if (s) { s.classList.add('active'); animateSlide(s); }
+  current = n;
+  updateNav();
+  setTimeout(initCardTilt, 110);
 }
 function changeSlide(dir) { let n = current + dir; if (n < 1) n = total; if (n > total) n = 1; goToSlide(n); }
 function updateNav() {
   document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i + 1 === current));
-  counter.textContent = current + ' / ' + total;
-  progress.style.width = ((current / total) * 100) + '%';
+  counterEl.textContent = current + ' / ' + total;
+  progressEl.style.width = ((current / total) * 100) + '%';
 }
+
+// === Reveal animation ===
+function animateSlide(slide) {
+  slide.querySelectorAll('.reveal').forEach((el, i) => {
+    el.style.transition = 'none';
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(22px)';
+    el.offsetHeight;
+    el.style.transition = `opacity 0.38s ease ${i * 0.065}s, transform 0.38s ease ${i * 0.065}s`;
+    el.style.opacity = '1';
+    el.style.transform = 'translateY(0)';
+  });
+}
+
+// === 3D card tilt ===
+function initCardTilt() {
+  document.querySelectorAll('.slide.active .card, .slide.active .timeline .item').forEach(el => {
+    el.onmousemove = (e) => {
+      const r = el.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width - .5;
+      const y = (e.clientY - r.top) / r.height - .5;
+      el.style.transition = 'box-shadow .15s, border-color .2s';
+      el.style.transform = `perspective(700px) rotateY(${x * 8}deg) rotateX(${-y * 8}deg) translateZ(6px)`;
+    };
+    el.onmouseleave = () => {
+      el.style.transition = 'transform .42s ease, box-shadow .15s, border-color .2s';
+      el.style.transform = '';
+    };
+  });
+}
+
+// === Keyboard & touch ===
 document.addEventListener('keydown', e => {
   if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); changeSlide(1); }
   if (e.key === 'ArrowLeft') { e.preventDefault(); changeSlide(-1); }
 });
 let tx = 0;
-document.addEventListener('touchstart', e => { tx = e.touches[0].clientX; });
+document.addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, { passive: true });
 document.addEventListener('touchend', e => { const d = tx - e.changedTouches[0].clientX; if (Math.abs(d) > 50) changeSlide(d > 0 ? 1 : -1); });
-function animateSlide(slide) {
-  slide.querySelectorAll('.reveal').forEach((el, i) => {
-    el.style.transition = 'none'; el.style.opacity = '0'; el.style.transform = 'translateY(20px)'; el.offsetHeight;
-    el.style.transition = `opacity 0.35s ease ${i * 0.065}s, transform 0.35s ease ${i * 0.065}s`;
-    el.style.opacity = '1'; el.style.transform = 'translateY(0)';
+
+// === Shared mouse position ===
+let mx = innerWidth / 2, my = innerHeight / 2;
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  curDot.style.left = mx + 'px';
+  curDot.style.top = my + 'px';
+});
+
+// === Mouse parallax on blobs ===
+function parallaxLoop() {
+  const nx = (mx / innerWidth - .5) * 2;
+  const ny = (my / innerHeight - .5) * 2;
+  document.querySelectorAll('.blob').forEach((b, i) => {
+    const f = 10 + (i % 3) * 7;
+    b.style.transform = `translate(${nx * f}px, ${ny * f}px)`;
   });
+  requestAnimationFrame(parallaxLoop);
 }
-updateNav(); animateSlide(document.querySelector('.slide.active'));
+parallaxLoop();
+
+// === Particle canvas ===
+const canvas = document.getElementById('particle-canvas');
+const ctx = canvas.getContext('2d');
+let W = canvas.width = innerWidth, H = canvas.height = innerHeight;
+window.addEventListener('resize', () => { W = canvas.width = innerWidth; H = canvas.height = innerHeight; });
+const pts = Array.from({ length: 55 }, () => ({
+  x: Math.random() * W, y: Math.random() * H,
+  vx: (Math.random() - .5) * .42, vy: (Math.random() - .5) * .42,
+  r: 1 + Math.random() * 1.1
+}));
+function drawCanvas() {
+  ctx.clearRect(0, 0, W, H);
+  const nmx = mx / W - .5, nmy = my / H - .5;
+  for (const p of pts) {
+    p.x += p.vx + nmx * .05;
+    p.y += p.vy + nmy * .05;
+    if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+    if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(15,118,110,.2)';
+    ctx.fill();
+  }
+  for (let i = 0; i < pts.length; i++) {
+    for (let j = i + 1; j < pts.length; j++) {
+      const dx = pts[i].x - pts[j].x, dy = pts[i].y - pts[j].y;
+      const d = Math.sqrt(dx * dx + dy * dy);
+      if (d < 130) {
+        ctx.beginPath();
+        ctx.moveTo(pts[i].x, pts[i].y);
+        ctx.lineTo(pts[j].x, pts[j].y);
+        ctx.strokeStyle = `rgba(15,118,110,${.05 * (1 - d / 130)})`;
+        ctx.lineWidth = .7;
+        ctx.stroke();
+      }
+    }
+  }
+  requestAnimationFrame(drawCanvas);
+}
+drawCanvas();
+
+// === Custom cursor ring (lerp) ===
+const curDot = document.getElementById('cur-dot');
+const curRing = document.getElementById('cur-ring');
+let rx = mx, ry = my;
+function cursorLoop() {
+  rx += (mx - rx) * .11;
+  ry += (my - ry) * .11;
+  curRing.style.left = rx + 'px';
+  curRing.style.top = ry + 'px';
+  requestAnimationFrame(cursorLoop);
+}
+cursorLoop();
+
+// Init
+updateNav();
+animateSlide(document.querySelector('.slide.active'));
+setTimeout(initCardTilt, 110);
 </script>
 </body>
 </html>

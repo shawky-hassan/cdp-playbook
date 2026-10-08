@@ -4,7 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>CDP Playbook — Concur</title>
-  <meta name="description" content="Visual decks covering SAP CDP for Concur Marketing — roadmap, kickoff decisions, and proof-of-concept path."/>
+  <meta name="description" content="Visual deck covering SAP CDP kickoff decisions for the Concur Marketing proof-of-concept."/>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300..800&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
@@ -20,7 +20,7 @@
 
     /* ── Header ── */
     header {
-      padding: 64px 24px 52px;
+      padding: 72px 24px 60px;
       text-align: center;
       position: relative;
       overflow: hidden;
@@ -72,20 +72,10 @@
     .pill-amber { background: rgba(245,158,11,.12); color: #b45309; }
     .pill-red { background: rgba(239,68,68,.08); color: #dc2626; }
 
-    /* ── Section ── */
-    .section-label {
-      max-width: 1100px; margin: 0 auto 14px;
-      padding: 0 24px;
-      font-size: .72rem; font-weight: 700; color: #94a3b8;
-      letter-spacing: .08em; text-transform: uppercase;
-    }
-
-    /* ── Grid ── */
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 22px;
-      max-width: 1100px; margin: 0 auto;
+    /* ── Card container ── */
+    .card-wrap {
+      max-width: 520px;
+      margin: 0 auto;
       padding: 0 24px;
     }
 
@@ -93,8 +83,8 @@
     .card {
       background: white;
       border: 1px solid rgba(15,23,42,.08);
-      border-radius: 26px;
-      padding: 30px;
+      border-radius: 28px;
+      padding: 36px;
       text-decoration: none;
       color: inherit;
       display: flex; flex-direction: column;
@@ -104,116 +94,54 @@
     }
     .card:hover {
       transform: translateY(-5px);
-      box-shadow: 0 18px 52px rgba(15,23,42,.1);
+      box-shadow: 0 20px 56px rgba(15,23,42,.11);
       border-color: rgba(15,118,110,.22);
     }
     .card-accent {
       position: absolute; top: 0; left: 0; right: 0; height: 3px;
       opacity: 0; transition: opacity .22s;
+      background: linear-gradient(90deg, #0f766e, #2563eb);
     }
     .card:hover .card-accent { opacity: 1; }
-    .accent-teal { background: linear-gradient(90deg, #0f766e, #2563eb); }
-    .accent-dark { background: linear-gradient(90deg, #0f766e, #7c3aed); }
 
-    .icon { font-size: 2.6rem; margin-bottom: 18px; line-height: 1; }
-    .card-meta { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 12px; }
-    .card h2 { font-size: 1.25rem; font-weight: 800; margin-bottom: 8px; line-height: 1.25; }
-    .card p { font-size: .87rem; color: #64748b; line-height: 1.6; flex: 1; margin-bottom: 22px; }
+    .icon { font-size: 3rem; margin-bottom: 20px; line-height: 1; }
+    .card-meta { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 14px; }
+    .card h2 { font-size: 1.5rem; font-weight: 800; margin-bottom: 10px; line-height: 1.2; }
+    .card p { font-size: .9rem; color: #64748b; line-height: 1.65; flex: 1; margin-bottom: 28px; }
 
     .card-footer {
       display: flex; align-items: center; justify-content: space-between;
-      padding-top: 16px; border-top: 1px solid rgba(15,23,42,.06);
+      padding-top: 18px; border-top: 1px solid rgba(15,23,42,.06);
     }
-    .slide-count { font-size: .76rem; font-weight: 600; color: #94a3b8; }
+    .slide-count { font-size: .78rem; font-weight: 600; color: #94a3b8; }
     .open-btn {
       display: inline-flex; align-items: center; gap: 5px;
-      font-size: .8rem; font-weight: 700; color: #0f766e;
+      font-size: .82rem; font-weight: 700; color: #0f766e;
       background: rgba(15,118,110,.08); border-radius: 999px;
-      padding: 6px 14px; text-decoration: none;
+      padding: 7px 16px; text-decoration: none;
       transition: background .15s;
     }
     .card:hover .open-btn { background: rgba(15,118,110,.16); }
 
-    /* ── Immersive badge ── */
-    .badge-dark {
-      position: absolute; top: 16px; right: 16px;
-      background: #0f172a; color: rgba(255,255,255,.7);
-      font-size: .64rem; font-weight: 700; letter-spacing: .06em;
-      text-transform: uppercase; border-radius: 999px; padding: 4px 10px;
-      border: 1px solid rgba(255,255,255,.1);
-    }
-
-    /* ── Dark card ── */
-    .card-dark {
-      background: #0a1628;
-      border-color: rgba(0,207,180,.15);
-      color: #e2eaf5;
-    }
-    .card-dark:hover {
-      border-color: rgba(0,207,180,.35);
-      box-shadow: 0 18px 52px rgba(0,0,0,.4), 0 0 40px rgba(0,207,180,.06);
-    }
-    .card-dark h2 { color: #e2eaf5; }
-    .card-dark p { color: rgba(226,234,245,.5); }
-    .card-dark .card-footer { border-top-color: rgba(255,255,255,.05); }
-    .card-dark .slide-count { color: rgba(226,234,245,.3); }
-    .card-dark .open-btn { color: #00cfb4; background: rgba(0,207,180,.1); }
-    .card-dark:hover .open-btn { background: rgba(0,207,180,.18); }
-    .card-dark .icon-container {
-      width: 52px; height: 52px; border-radius: 16px;
-      background: rgba(0,207,180,.1); border: 1px solid rgba(0,207,180,.2);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.6rem; margin-bottom: 18px;
-    }
-
-    /* ── Divider ── */
-    .section-divider {
-      max-width: 1100px; margin: 36px auto 28px;
-      padding: 0 24px;
-      display: flex; align-items: center; gap: 12px;
-    }
-    .section-divider span { font-size: .72rem; font-weight: 700; color: #94a3b8; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
-    .section-divider::before, .section-divider::after {
-      content: ''; flex: 1; height: 1px;
-      background: rgba(15,23,42,.08);
-    }
-
     /* ── Footer ── */
-    footer { text-align: center; padding: 48px 24px 0; font-size: .76rem; color: #cbd5e1; }
+    footer { text-align: center; padding: 56px 24px 0; font-size: .76rem; color: #cbd5e1; }
   </style>
 </head>
 <body>
   <header>
     <div class="logo-chip"><span>⬡</span> CDP Playbook</div>
     <h1>SAP CDP for Concur</h1>
-    <p class="sub">Visual decks covering everything from the core CDP concepts to kickoff decisions and the October proof-of-concept path.</p>
+    <p class="sub">October proof-of-concept plan, kickoff decisions, and the PI-planning gate — all in one visual deck.</p>
     <div class="header-pills">
-      <span class="pill pill-teal">3 decks</span>
-      <span class="pill pill-blue">Concur pilot</span>
+      <span class="pill pill-teal">Concur pilot</span>
+      <span class="pill pill-amber">October decisions</span>
       <span class="pill pill-red">PI gate: 31 Oct</span>
     </div>
   </header>
 
-  <p class="section-label">Standard decks</p>
-  <div class="grid">
-
-    <a class="card" href="cdp-roadmap-enhanced.html">
-      <div class="card-accent accent-teal"></div>
-      <div class="icon">🧭</div>
-      <div class="card-meta">
-        <span class="pill pill-teal">CDP Foundations</span>
-        <span class="pill pill-blue">SAP</span>
-      </div>
-      <h2>CDP Roadmap for Concur</h2>
-      <p>The full visual roadmap — how SAP CDP connects source systems, unifies customer data, and activates audiences into Marketo, Salesforce, Demandbase, and other channels.</p>
-      <div class="card-footer">
-        <span class="slide-count">9 slides</span>
-        <span class="open-btn">Open deck →</span>
-      </div>
-    </a>
-
+  <div class="card-wrap">
     <a class="card" href="cdp-kickoff.html">
-      <div class="card-accent accent-teal"></div>
+      <div class="card-accent"></div>
       <div class="icon">🚀</div>
       <div class="card-meta">
         <span class="pill pill-teal">Kickoff</span>
@@ -221,35 +149,12 @@
         <span class="pill pill-red">PI gate</span>
       </div>
       <h2>CDP Kickoff Decisions</h2>
-      <p>October proof-of-concept plan, sandbox activation path, operating model decisions (crawl/walk/run), cadence, and the 31 October PI-planning gate.</p>
+      <p>October proof-of-concept plan, sandbox activation path, operating model decisions (crawl/walk/run), cadence, and the 31 October PI-planning gate. Includes mouse-reactive background, 3D card tilt, and blur slide transitions.</p>
       <div class="card-footer">
         <span class="slide-count">10 slides</span>
         <span class="open-btn">Open deck →</span>
       </div>
     </a>
-
-  </div>
-
-  <div class="section-divider"><span>Immersive version</span></div>
-  <p class="section-label">Creative / immersive experience</p>
-  <div class="grid" style="grid-template-columns: repeat(auto-fill, minmax(320px, 480px))">
-
-    <a class="card card-dark" href="cdp-kickoff-immersive.html">
-      <div class="badge-dark">✦ Immersive</div>
-      <div class="icon-container">🌐</div>
-      <div class="card-meta">
-        <span class="pill" style="background:rgba(0,207,180,.1);color:#00cfb4;border:1px solid rgba(0,207,180,.2)">Dark theme</span>
-        <span class="pill" style="background:rgba(79,142,255,.1);color:#4f8eff;border:1px solid rgba(79,142,255,.2)">Mouse reactive</span>
-        <span class="pill" style="background:rgba(255,255,255,.06);color:rgba(226,234,245,.5);border:1px solid rgba(255,255,255,.1)">3D tilt</span>
-      </div>
-      <h2>CDP Kickoff — Immersive</h2>
-      <p>Same kickoff content in a dark, immersive UI — particle canvas background, mouse-tracking parallax, 3D card tilt, blur slide transitions, and custom cursor. Built to feel alive.</p>
-      <div class="card-footer">
-        <span class="slide-count">10 slides</span>
-        <span class="open-btn">Open deck →</span>
-      </div>
-    </a>
-
   </div>
 
   <footer>CDP Playbook — Concur Marketing · SAP</footer>
